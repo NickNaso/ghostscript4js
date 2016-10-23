@@ -1,0 +1,53 @@
+{
+  "name": "ghostscript4js",
+  "description": "ghostscript4js binds the Ghostscript C API to bring Ghostscript power to the Node.JS world.",
+  "version": "1.0.0",
+  "contributors": [
+    {
+      "name": "Nicola Del Gobbo",
+      "email": "nicoladelgobbo@gmail.com"
+    }
+  ],
+  "keywords": [
+    "ghostscript",
+    "postscript",
+    "native",
+    "pdf",
+    "ps",
+    "eps"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json"
+  },
+  "engines": {
+    "node": ">= 6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NickNaso/ghostscript4js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NickNaso/ghostscript4js/issues"
+  },
+  "homepage": "http://www.nacios.it/",
+  "dependencies": {
+    "co": "^4.6.0",
+    "co-request": "^1.0.0",
+    "fs-extra": "^0.30.0",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "formidable": "^1.0.17",
+    "jasmine": "^2.5.2"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md",
+    "index.js",
+    "lib/"
+  ]
+}
