@@ -18,7 +18,8 @@
   ],
   "license": "Apache-2.0",
   "scripts": {
-    "test": "node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json"
+    "test": "node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json",
+    "install": "node-gyp rebuild"
   },
   "engines": {
     "node": ">= 6.0.0"
@@ -33,15 +34,18 @@
   },
   "homepage": "http://www.nacios.it/",
   "dependencies": {
+    "bindings": "^1.2.1",
+    "nan": "^2.4.0"
   },
   "devDependencies": {
+    "jasmine": "^2.5.2"
   },
   "files": [
     "LICENSE",
     "README.md",
     "CHANGELOG.md",
     "index.js",
-    "lib/"
+    "lib/",
     "src/"
   ]
 }
