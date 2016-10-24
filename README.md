@@ -9,6 +9,8 @@ To build, and run the module, you must have ``libgs-dev`` installed.
 
 On Debian systems, this can be achieved using ``apt-get install libgs-dev``.
 
+In general ``libgs-dev`` install the header files interface to call the Ghostscript C API but you need to check if libgs.so is installed on your system before use it.
+
 ### Compile C++ source
 
 ```bash
