@@ -9,3 +9,13 @@ To build, and run the module, you must have ``libgs-dev`` installed.
 
 On Debian systems, this can be achieved using ``apt-get install libgs-dev``.
 
+### Compile C++ source
+
+```bash
+g++ -g -o output-file source-file
+```
+### Compile C source
+
+```bash
+cc source-file -o output-file
+```
