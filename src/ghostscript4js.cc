@@ -18,34 +18,37 @@
 
 #include "ghostscript4js.h"
 
-
-void Version(const Nan::FunctionCallbackInfo<Value>& info) {
+void Version(const Nan::FunctionCallbackInfo<Value> &info)
+{
     Nan::HandleScope();
-    info.GetReturnValue().Set(Nan::New<String>("Here the Ghostscript version").ToLocalChecked());    
+    info.GetReturnValue().Set(Nan::New<String>("Here the Ghostscript version").ToLocalChecked());
 }
 
-void Execute(const Nan::FunctionCallbackInfo<Value>& info) {
+void Execute(const Nan::FunctionCallbackInfo<Value> &info)
+{
     Nan::HandleScope();
-    info.GetReturnValue().Set(Nan::New<String>("Execute Ghostscript command").ToLocalChecked());    
+    info.GetReturnValue().Set(Nan::New<String>("Execute Ghostscript command").ToLocalChecked());
 }
 
-void ExecuteSync(const Nan::FunctionCallbackInfo<Value>& info) {
+void ExecuteSync(const Nan::FunctionCallbackInfo<Value> &info)
+{
     Nan::HandleScope();
-    info.GetReturnValue().Set(Nan::New<String>("Async exection of Ghostscript command").ToLocalChecked());    
+    info.GetReturnValue().Set(Nan::New<String>("Async exection of Ghostscript command").ToLocalChecked());
 }
 
 //////////////////////////// INIT & CONFIG MODULE //////////////////////////////
 
-void Init(Local<Object> exports) {
+void Init(Local<Object> exports)
+{
 
     exports->Set(Nan::New("version").ToLocalChecked(),
                  Nan::New<FunctionTemplate>(Version)->GetFunction());
 
     exports->Set(Nan::New("execute").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(Version)->GetFunction());                 
+                 Nan::New<FunctionTemplate>(Version)->GetFunction());
 
-     exports->Set(Nan::New("executeSync").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(Version)->GetFunction());             
+    exports->Set(Nan::New("executeSync").ToLocalChecked(),
+                 Nan::New<FunctionTemplate>(Version)->GetFunction());
 }
 
 NODE_MODULE(ghostscript4js, Init)
