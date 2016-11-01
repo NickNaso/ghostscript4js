@@ -21,6 +21,8 @@
 void Version(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
+    gsapi_revision_t r;
+    int res = gsapi_revision(&r, sizeof(r));
     info.GetReturnValue().Set(Nan::New<String>("Here the Ghostscript version").ToLocalChecked());
 }
 
