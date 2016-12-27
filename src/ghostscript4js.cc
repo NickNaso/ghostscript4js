@@ -22,8 +22,8 @@ void Version(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
     gsapi_revision_t r;
-    int res = gsapi_revision(&r, sizeof(r));
-    info.GetReturnValue().Set(Nan::New<String>("Here the Ghostscript version").ToLocalChecked());
+   gsapi_revision(&r, sizeof(r));
+    info.GetReturnValue().Set(Nan::New<String>(r.product).ToLocalChecked());
 }
 
 void Execute(const Nan::FunctionCallbackInfo<Value> &info)
@@ -38,6 +38,7 @@ void ExecuteSync(const Nan::FunctionCallbackInfo<Value> &info)
     info.GetReturnValue().Set(Nan::New<String>("Async exection of Ghostscript command").ToLocalChecked());
 }
 
+
 //////////////////////////// INIT & CONFIG MODULE //////////////////////////////
 
 void Init(Local<Object> exports)
@@ -50,7 +51,7 @@ void Init(Local<Object> exports)
                  Nan::New<FunctionTemplate>(Version)->GetFunction());
 
     exports->Set(Nan::New("executeSync").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(Version)->GetFunction());
+                 Nan::New<FunctionTemplate>(Version)->GetFunction());              
 }
 
 NODE_MODULE(ghostscript4js, Init)

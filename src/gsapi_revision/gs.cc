@@ -9,7 +9,7 @@
 using namespace std;
 
 int main () { 
-
+   
    gsapi_revision_t r;
    int res = gsapi_revision(&r, sizeof(r));
 
