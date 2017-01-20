@@ -18,6 +18,43 @@
 
 #include "ghostscript4js.h"
 
+static int GSDLLCALL
+gsdll_stdin(void *instance, char *buf, int len)
+{
+    int ch;
+    int count = 0;
+    while (count < len) {
+	ch = fgetc(stdin);
+	if (ch == EOF)
+	    return 0;
+	*buf++ = ch;
+	count++;
+	if (ch == '\n')
+	    break;
+    }
+    return count;
+}
+
+static int GSDLLCALL
+gsdll_stdout(void *instance, const char *str, int len)
+{
+    fwrite(str, 1, len, stdout);
+    fflush(stdout);
+    return len;
+}
+
+static int GSDLLCALL
+gsdll_stderr(void *instance, const char *str, int len)
+{
+    fwrite(str, 1, len, stderr);
+    fflush(stderr);
+    return len;
+}
+
+void *minst;
+const char start_string[] = "systemdict /start get exec\n";
+
+
 void Version(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
@@ -29,13 +66,23 @@ void Version(const Nan::FunctionCallbackInfo<Value> &info)
 void Execute(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
+    
+
     info.GetReturnValue().Set(Nan::New<String>("Execute Ghostscript command").ToLocalChecked());
 }
 
 void ExecuteSync(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
-    info.GetReturnValue().Set(Nan::New<String>("Async exection of Ghostscript command").ToLocalChecked());
+    int code, code1;
+    int exit_code;
+    code = gsapi_new_instance(&minst, NULL);
+    if (code < 0)
+	    info.GetReturnValue().Set(Nan::New<String>("Error code < 0").ToLocalChecked());
+    gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
+    code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);    
+
+    info.GetReturnValue().Set(Nan::New<String>("Sync exection of Ghostscript command").ToLocalChecked());
 }
 
 
@@ -51,7 +98,7 @@ void Init(Local<Object> exports)
                  Nan::New<FunctionTemplate>(Version)->GetFunction());
 
     exports->Set(Nan::New("executeSync").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(Version)->GetFunction());              
+                 Nan::New<FunctionTemplate>(ExecuteSync)->GetFunction());              
 }
 
 NODE_MODULE(ghostscript4js, Init)

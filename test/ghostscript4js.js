@@ -31,4 +31,8 @@ describe("Test ghostscript4js", function () {
      gs.version();
   });
 
+  it("Should return the version of Ghoscript", function () {
+     gs.executeSync();
+  });
+
 });
