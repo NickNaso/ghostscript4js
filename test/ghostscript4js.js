@@ -22,17 +22,16 @@
  * Module dependencies
  */
 const gs = require('../');
+var spawn = require('child_process').spawn;
 
 // process.chdir(__dirname); 
 
 describe("Test ghostscript4js", function () {
 
-  it("Should return the version of Ghoscript", function () {
-     gs.version();
-  });
+  /*it("Should return the version of Ghoscript", function () {
+    
+  });*/
 
-  it("Should return the version of Ghoscript", function () {
-     gs.executeSync();
-  });
+  
 
 });
