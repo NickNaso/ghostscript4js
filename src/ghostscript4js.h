@@ -19,6 +19,9 @@
 #ifndef GHOSTSCRIPT4JS_H
 #define GHOSTSCRIPT4JS_H
 
+#include <sstream>
+#include <string>
+
 #include <node.h>
 #include <node_buffer.h>
 #include <v8.h>
