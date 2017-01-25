@@ -18,70 +18,34 @@
 
 #include "ghostscript4js.h"
 
-static int GSDLLCALL
-gsdll_stdin(void *instance, char *buf, int len)
-{
-    int ch;
-    int count = 0;
-    while (count < len) {
-	ch = fgetc(stdin);
-	if (ch == EOF)
-	    return 0;
-	*buf++ = ch;
-	count++;
-	if (ch == '\n')
-	    break;
-    }
-    return count;
-}
-
-static int GSDLLCALL
-gsdll_stdout(void *instance, const char *str, int len)
-{
-    fwrite(str, 1, len, stdout);
-    fflush(stdout);
-    return len;
-}
-
-static int GSDLLCALL
-gsdll_stderr(void *instance, const char *str, int len)
-{
-    fwrite(str, 1, len, stderr);
-    fflush(stderr);
-    return len;
-}
-
-void *minst;
-const char start_string[] = "systemdict /start get exec\n";
-
-
 void Version(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
+    Local<Object> obj  = Nan::New<Object>();
     gsapi_revision_t r;
-   gsapi_revision(&r, sizeof(r));
-    info.GetReturnValue().Set(Nan::New<String>(r.product).ToLocalChecked());
+    int res = gsapi_revision(&r, sizeof(r));
+    if ( res == 0) {
+        obj->Set(Nan::New<String>("product").ToLocalChecked(), Nan::New<String>(r.product).ToLocalChecked());
+        obj->Set(Nan::New<String>("copyright").ToLocalChecked(), Nan::New<String>(r.copyright).ToLocalChecked());
+        obj->Set(Nan::New<String>("revision").ToLocalChecked(), Nan::New<Number>(r.revision));
+        obj->Set(Nan::New<String>("revisiondate").ToLocalChecked(), Nan::New<Number>(r.revisiondate));
+    } else {
+        std::stringstream msg; 
+        msg << "Error happened retrieving Ghostscript version info error code: " << res; 
+        return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
+    }
+    info.GetReturnValue().Set(obj);
 }
 
 void Execute(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
-    
-
     info.GetReturnValue().Set(Nan::New<String>("Execute Ghostscript command").ToLocalChecked());
 }
 
 void ExecuteSync(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
-    int code, code1;
-    int exit_code;
-    code = gsapi_new_instance(&minst, NULL);
-    if (code < 0)
-	    info.GetReturnValue().Set(Nan::New<String>("Error code < 0").ToLocalChecked());
-    gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
-    code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);    
-
     info.GetReturnValue().Set(Nan::New<String>("Sync exection of Ghostscript command").ToLocalChecked());
 }
 
@@ -95,7 +59,7 @@ void Init(Local<Object> exports)
                  Nan::New<FunctionTemplate>(Version)->GetFunction());
 
     exports->Set(Nan::New("execute").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(Version)->GetFunction());
+                 Nan::New<FunctionTemplate>(Execute)->GetFunction());
 
     exports->Set(Nan::New("executeSync").ToLocalChecked(),
                  Nan::New<FunctionTemplate>(ExecuteSync)->GetFunction());              
