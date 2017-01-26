@@ -46,7 +46,14 @@ void Execute(const Nan::FunctionCallbackInfo<Value> &info)
 void ExecuteSync(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
-    info.GetReturnValue().Set(Nan::New<String>("Sync exection of Ghostscript command").ToLocalChecked());
+    if (info.Length() < 1) {
+        return Nan::ThrowError("Sorry executeSync method requires 1 argument that represent the Ghostscript command.");
+    }
+    if (!info[0]->IsString()) {
+        return Nan::ThrowError("Sorry executeSync method's argument should be a string.");
+    }
+    Local<String> cmd = Local<String>::Cast(info[0]);
+    info.GetReturnValue().Set(Nan::New<String>(cmd).ToLocalChecked());
 }
 
 
