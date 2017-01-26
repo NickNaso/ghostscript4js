@@ -53,7 +53,7 @@ void ExecuteSync(const Nan::FunctionCallbackInfo<Value> &info)
         return Nan::ThrowError("Sorry executeSync method's argument should be a string.");
     }
     Local<String> cmd = Local<String>::Cast(info[0]);
-    info.GetReturnValue().Set(Nan::New<String>(cmd).ToLocalChecked());
+    info.GetReturnValue();
 }
 
 
