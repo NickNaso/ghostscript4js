@@ -33,4 +33,6 @@
 
 using namespace v8;
 
+#include "ghostscript.c"
+
 #endif //GHOSTSCRIPT4JS_H
