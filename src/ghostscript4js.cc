@@ -63,7 +63,6 @@ void ExecuteSync(const Nan::FunctionCallbackInfo<Value> &info)
     char * gsargv[explodedCmd.size()];
     int gsargc = explodedCmd.size();
     for(unsigned int i = 0; i < explodedCmd.size(); i++) {
-        
         gsargv[i] = (char*)explodedCmd[i].c_str();
     }
     code = gsapi_new_instance(&minst, NULL);
