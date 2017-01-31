@@ -40,7 +40,10 @@ void Version(const Nan::FunctionCallbackInfo<Value> &info)
 void Execute(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
-    info.GetReturnValue().Set(Nan::New<String>("Execute Ghostscript command").ToLocalChecked());
+    v8::Local<v8::Function> cb = info[1].As<v8::Function>();
+    const unsigned argc = 2;
+    v8::Local<v8::Value> argv[argc] = { Nan::Error("Cucu settete"), Nan::New("hello world2").ToLocalChecked() };
+    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
 }
 
 void ExecuteSync(const Nan::FunctionCallbackInfo<Value> &info)
