@@ -18,7 +18,7 @@
 
 #include "ghostscript4js.h"
 
-void Version(const Nan::FunctionCallbackInfo<Value> &info)
+NAN_METHOD(Version)
 {
     Nan::HandleScope();
     Local<Object> obj  = Nan::New<Object>();
@@ -40,68 +40,9 @@ void Version(const Nan::FunctionCallbackInfo<Value> &info)
 void Execute(const Nan::FunctionCallbackInfo<Value> &info)
 {
     Nan::HandleScope();
-    const unsigned argc = 1;
-    int check_info = 1;
-    if (info.Length() < 2) {
-        std::stringstream msg; 
-        msg << "Sorry execute() method requires at least two arguments the Ghostscript command and callback function.";
-        v8::Local<v8::Value> argv[argc] = {Nan::Error(Nan::New<String>(msg.str()).ToLocalChecked())};
-        check_info = 0;
-    }
-    if (!info[0]->IsString()) {
-        std::stringstream msg; 
-        msg << "Sorry execute() method's first argument should be a string that represent the Ghostscript command.";
-        v8::Local<v8::Value> argv[argc] = {Nan::Error(Nan::New<String>(msg.str()).ToLocalChecked())};
-        check_info = 0;
-    }
-    if (!info[1]->IsFunction()) {
-        std::stringstream msg; 
-        msg << "Sorry execute() method's second argument should be a callback function.";
-        v8::Local<v8::Value> argv[argc] = {Nan::Error(Nan::New<String>(msg.str()).ToLocalChecked())};
-        check_info = 0;
-    }
-
-    v8::Local<v8::Function> cb = info[1].As<v8::Function>();
-
-    Local<String> JScmd = Local<String>::Cast(info[0]);
-    std::string RAWcmd = *String::Utf8Value(JScmd);
-    std::vector<std::string> explodedCmd;
-    std::istringstream iss(RAWcmd);
-    for(std::string RAWcmd; iss >> RAWcmd;)
-        explodedCmd.push_back(RAWcmd);
-    void *minst;
-    int code, exit_code;
-    char * gsargv[explodedCmd.size()];
-    int gsargc = explodedCmd.size();
-    for(unsigned int i = 0; i < explodedCmd.size(); i++) {
-        gsargv[i] = (char*)explodedCmd[i].c_str();
-    }
-    code = gsapi_new_instance(&minst, NULL);
-    if (code < 0) {
-        std::stringstream msg; 
-        msg << "Sorry error happened creating Ghostscript instance. Error code: " << code;
-        v8::Local<v8::Value> argv[argc] = {Nan::Error(Nan::New<String>(msg.str()).ToLocalChecked())};
-    }    
-    gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
-    code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
-    if (code == 0)
-        code = gsapi_init_with_args(minst, gsargc, gsargv);
-    exit_code = gsapi_exit(minst);
-    if ((code == 0) || (code == gs_error_Quit))
-	code = exit_code;
-    gsapi_delete_instance(minst);
-    if ((code == 0) || (code == gs_error_Quit)) {
-       v8::Local<v8::Value> argv[argc] = {Nan::Null()};
-    } else {
-        std::stringstream msg; 
-        msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
-        v8::Local<v8::Value> argv[argc] = {Nan::Error(Nan::New<String>(msg.str()).ToLocalChecked())};
-    }  
-
-    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
 }
 
-void ExecuteSync(const Nan::FunctionCallbackInfo<Value> &info)
+NAN_METHOD(ExecuteSync)
 {
     Nan::HandleScope();
     if (info.Length() < 1) {
@@ -157,7 +98,7 @@ void Init(Local<Object> exports)
                  Nan::New<FunctionTemplate>(Execute)->GetFunction());
 
     exports->Set(Nan::New("executeSync").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(ExecuteSync)->GetFunction());              
+                 Nan::New<FunctionTemplate>(ExecuteSync)->GetFunction());                     
 }
 
 NODE_MODULE(ghostscript4js, Init)
