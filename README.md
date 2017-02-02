@@ -43,7 +43,9 @@ Ghostscript has been ported to many operating systems, including Unix-like syste
 ### More resource and info about Ghostscript
 
 *[Introduction to Ghostscript](https://www.gnu.org/software/ghostscript/intro.html)
+
 *[Ghostscript on Wikipedia](https://en.wikipedia.org/wiki/Ghostscript)
+
 *[Ghostscript documentation](https://www.ghostscript.com/Documentation.html)
 
 <a name="motivations"></a>
