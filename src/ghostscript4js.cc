@@ -45,18 +45,18 @@ class GhostscriptWorker : public AsyncWorker {
                 gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
                 code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
                 if (code == 0)
-                    code = gsapi_init_with_args(minst, gsargc, gsargv);   
+                    code = gsapi_init_with_args(minst, gsargc, gsargv); 
+                exit_code = gsapi_exit(minst);
+                if ((code == 0) || (code == gs_error_Quit))
+                    code = exit_code;
+                gsapi_delete_instance(minst);
+                if ((code == 0) || (code == gs_error_Quit)) {
+                    res = 0;
+                } else {
+                    msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
+                    res = 1;
+                }        
             }     
-            exit_code = gsapi_exit(minst);
-            if ((code == 0) || (code == gs_error_Quit))
-                code = exit_code;
-            gsapi_delete_instance(minst);
-            if ((code == 0) || (code == gs_error_Quit)) {
-                res = 0;
-            } else {
-                msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
-                res = 1;
-            }  
         }
 
         void HandleOKCallback() {
