@@ -1,7 +1,7 @@
 ## The module is almost ready need some time to write documentation 
 
 <p align="center">
-<img src="" width="" height=""/>
+<img src="node-love-ghostscript.png" width="1688" height="500"/>
 </p>
 
 # Ghostscript4JS 
@@ -68,6 +68,10 @@ to not block the event loop, so all request will be served whiout any delay orig
 
 <a name="prerequisites"></a>
 ## Prerequisites
+
+Before install Ghostscript4JS youe need to assure you have been installed the following preequisites:
+
+* Node.JS 
 
 <a name="install"></a>
 ## Installation
