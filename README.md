@@ -1,5 +1,3 @@
-## The module is almost ready need some time to write documentation 
-
 <p align="center">
 <img src="node-love-ghostscript.png"/>
 </p>
