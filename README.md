@@ -40,6 +40,12 @@ As it takes the form of a language interpreter, Ghostscript can also be used as 
 Ghostscript has been ported to many operating systems, including Unix-like systems, classic **Mac OS**, **OpenVMS**, **Microsoft Windows**,
 **Plan 9**, **MS-DOS**, **FreeDOS**, **OS/2**, **Atari TOS and AmigaOS**.
 
+### More resource and info about Ghostscript
+
+*[Introduction to Ghostscript](https://www.gnu.org/software/ghostscript/intro.html)
+*[Ghostscript on Wikipedia](https://en.wikipedia.org/wiki/Ghostscript)
+*[Ghostscript documentation](https://www.ghostscript.com/Documentation.html)
+
 <a name="motivations"></a>
 ## Motivation
 
@@ -66,7 +72,7 @@ Ghostscript has been ported to many operating systems, including Unix-like syste
 <a name="acknowledgements"></a>
 ## Acknowledgements
 
-Thank you to all encourage me every day.
+Thank you to all people that encourage me every day.
 
 <a name="license"></a>
 ## License
