@@ -55,10 +55,9 @@ At time i created this module i do not able to find any module on npm that execu
 otherwise there are some module that call Ghostscript through the execution of the corresponding shell command. This is
 good way to start use some library from node, but there are the following drawbacks:
 
-* **Performance** The call to shell command take more time and more resource than call a library directly from Node.js environment.
+* **Performance** - The call to the shell command take more time and more resources than call a library API directly from Node.js environment.
 
-* **Errror handler** Sometimes you cannot intercept and handle errors in a good way.
-
+* **Errror handler** - Sometimes you cannot intercept and handle errors in a good and proper way.
 
 <a name="prerequisites"></a>
 ## Prerequisites
