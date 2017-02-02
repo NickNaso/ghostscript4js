@@ -1,7 +1,7 @@
 ## The module is almost ready need some time to write documentation 
 
 <p align="center">
-<img src="node-love-ghostscript.png" width="1688" height="500"/>
+<img src="node-love-ghostscript.png"/>
 </p>
 
 # Ghostscript4JS 
