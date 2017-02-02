@@ -23,28 +23,20 @@
  */
 const gs = require('../');
 
-// process.chdir(__dirname); 
+process.chdir(__dirname); 
 
 describe("Test ghostscript4js", function () {
 
-  /*it("Should return the version of Ghoscript", function () {
+  it("Should return the version of Ghoscript", function () {
     
-  });*/
-
-  /*it("Should execute Ghostscript command synchronous", function () {
-  });*/
-
-  it("Should execute Ghostscript command asynchronous", function (done) {
-       gs.execute("", function (err) {
-         if(err) {
-          console.log(err);
-         } else {
-          console.log("res");
-         }
-         done();
-       });
   });
 
-  
+  it("Should execute Ghostscript command synchronous", function () {
+
+  });
+
+  it("Should execute Ghostscript command asynchronous", function () {
+       
+  });
 
 });
