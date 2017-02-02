@@ -35,12 +35,14 @@ describe("Test ghostscript4js", function () {
   });*/
 
   it("Should execute Ghostscript command asynchronous", function (done) {
-    gs.execute('', function (err) {
-      if (err) {
-        console.log(err.message);
-      }
-      done();
-    })
+       gs.execute("", function (err) {
+         if(err) {
+          console.log(err);
+         } else {
+          console.log("res");
+         }
+         done();
+       });
   });
 
   

@@ -18,6 +18,64 @@
 
 #include "ghostscript4js.h"
 
+class GhostscriptWorker : public AsyncWorker {
+    public:
+        GhostscriptWorker(Callback *callback, string RAWcmd) 
+            : AsyncWorker(callback), RAWcmd(RAWcmd), res(0) {}
+        ~GhostscriptWorker() {} 
+
+        void Execute() {
+            res = 0;
+            vector<string> explodedCmd;
+            istringstream iss(RAWcmd);
+            for(string RAWcmd; iss >> RAWcmd;)
+                explodedCmd.push_back(RAWcmd);
+            void *minst;
+            int code, exit_code;
+            char * gsargv[explodedCmd.size()];
+            int gsargc = explodedCmd.size();
+            for(unsigned int i = 0; i < explodedCmd.size(); i++) {
+                gsargv[i] = (char*)explodedCmd[i].c_str();
+            }
+            code = gsapi_new_instance(&minst, NULL);
+            if (code < 0) {
+                msg << "Sorry error happened creating Ghostscript instance. Error code: " << code;
+                res = 1;
+            } else {
+                gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
+                code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
+                if (code == 0)
+                    code = gsapi_init_with_args(minst, gsargc, gsargv);   
+            }     
+            exit_code = gsapi_exit(minst);
+            if ((code == 0) || (code == gs_error_Quit))
+                code = exit_code;
+            gsapi_delete_instance(minst);
+            if ((code == 0) || (code == gs_error_Quit)) {
+                res = 0;
+            } else {
+                msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
+                res = 1;
+            }  
+        }
+
+        void HandleOKCallback() {
+            Nan::HandleScope();
+            Local<Value> argv[1];
+            if (res == 0) {
+                argv[0] = Null();
+            } else {
+                argv[0] = Error(Nan::New<String>(msg.str()).ToLocalChecked());
+            }
+            callback->Call(1, argv);
+        } 
+
+        private:
+            string RAWcmd;
+            int res;
+            stringstream msg;
+};
+
 NAN_METHOD(Version)
 {
     Nan::HandleScope();
@@ -37,9 +95,12 @@ NAN_METHOD(Version)
     info.GetReturnValue().Set(obj);
 }
 
-void Execute(const Nan::FunctionCallbackInfo<Value> &info)
+NAN_METHOD(Execute)
 {
-    Nan::HandleScope();
+    Callback *callback = new Callback(info[1].As<Function>());
+    Local<String> JScmd = Local<String>::Cast(info[0]);
+    string RAWcmd = *String::Utf8Value(JScmd);
+    AsyncQueueWorker(new GhostscriptWorker(callback, RAWcmd));    
 }
 
 NAN_METHOD(ExecuteSync)
@@ -52,10 +113,10 @@ NAN_METHOD(ExecuteSync)
         return Nan::ThrowError("Sorry executeSync() method's argument should be a string.");
     }
     Local<String> JScmd = Local<String>::Cast(info[0]);
-    std::string RAWcmd = *String::Utf8Value(JScmd);
-    std::vector<std::string> explodedCmd;
-    std::istringstream iss(RAWcmd);
-    for(std::string RAWcmd; iss >> RAWcmd;)
+    string RAWcmd = *String::Utf8Value(JScmd);
+    vector<string> explodedCmd;
+    istringstream iss(RAWcmd);
+    for(string RAWcmd; iss >> RAWcmd;)
         explodedCmd.push_back(RAWcmd);
     void *minst;
     int code, exit_code;
@@ -66,7 +127,7 @@ NAN_METHOD(ExecuteSync)
     }
     code = gsapi_new_instance(&minst, NULL);
     if (code < 0) {
-        std::stringstream msg; 
+        stringstream msg; 
         msg << "Sorry error happened creating Ghostscript instance. Error code: " << code;
         return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
     }    
@@ -81,7 +142,7 @@ NAN_METHOD(ExecuteSync)
     if ((code == 0) || (code == gs_error_Quit)) {
        return;
     } else {
-        std::stringstream msg; 
+        stringstream msg; 
         msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
         return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
     }  

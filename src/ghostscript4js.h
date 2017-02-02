@@ -31,7 +31,9 @@
 #include <ghostscript/iapi.h>
 #include <ghostscript/ierrors.h>
 
+using namespace Nan;
 using namespace v8;
+using namespace std;
 
 #include "ghostscript.c"
 
