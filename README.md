@@ -55,9 +55,16 @@ At time i created this module i do not able to find any module on npm that execu
 otherwise there are some module that call Ghostscript through the execution of the corresponding shell command. This is
 good way to start use some library from node, but there are the following drawbacks:
 
-* **Performance** - The call to the shell command take more time and more resources than call a library API directly from Node.js environment.
+* **Performance** - The call to the shell command take more time and more resources than call a library C or C++ API directly
+
+from Node.js environment.
 
 * **Errror handler** - Sometimes you cannot intercept and handle errors in a good and proper way.
+
+To fit all needs Ghostscript4JS has sync and async method so it could be used in a web application where it's very important
+to not block the event loop, so all request will be served whiout any delay originated by our application.
+
+[Understanding Node.js event loop](https://nodesource.com/blog/understanding-the-nodejs-event-loop/)
 
 <a name="prerequisites"></a>
 ## Prerequisites
