@@ -75,10 +75,39 @@ Before install Ghostscript4JS youe need to assure you have been installed the fo
 
 * Install **Ghostscript** for your Operating System.
   * [Installation from official documentation](https://ghostscript.com/doc/current/Install.htm)
-  * [Download](https://ghostscript.com/download/gsdnld.html)
+  * [Download Ghostscript](https://ghostscript.com/download/gsdnld.html)
 
 <a name="install"></a>
 ## Installation
+
+If you want use ghostscript4js you have to install it. There are two methods for that:
+
+In dependencies of your ```package.json``` add the following item:
+
+```json
+"ghostscript4js": "version"
+```
+
+then digit
+
+```console
+npm install
+```
+
+**Example**:
+
+```json
+"ghostscript4js": "*" for the latest version
+"ghostscript4js": "1.0.0" for the version 1.0.0
+```
+
+**OR**
+
+launch this command:
+
+```console
+npm install ghostscript4js --save
+```
 
 <a name="usage"></a>
 ## Usage
