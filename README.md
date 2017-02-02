@@ -1,10 +1,11 @@
-## The module is almost ready need some time to read documentation 
+## The module is almost ready need some time to write documentation 
 
 <p align="center">
 <img src="" width="" height=""/>
 </p>
 
-# Ghostscript4JS binds the Ghostscript C API to bring Ghostscript power to the Node.JS world
+# Ghostscript4JS 
+## This module binds the Ghostscript C API to bring its power to the Node.JS world
 
 * [Prerequisites](#prerequisites)
 * [Installation](#install)
@@ -41,7 +42,7 @@ Thank you to all encouraged me every day.
 <a name="license"></a>
 ## License
 
-Licensed under [Apache license V2"](./LICENSE).
+Licensed under [Apache license V2](./LICENSE).
 
 [Native Abstractions for Node.js]: https://www.npmjs.com/package/nan
 [bindings]: https://www.npmjs.com/package/bindings
