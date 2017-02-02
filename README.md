@@ -1,23 +1,47 @@
-# ghostscript4js
-Ghostscript4JS binds the Ghostscript C API to bring Ghostscript power to the Node.JS world.
+## The module is almost ready need some time to read documentation 
 
-### This project is not yet finished give me another time :-)
+<p align="center">
+<img src="" width="" height=""/>
+</p>
 
-## Note
+# Ghostscript4JS binds the Ghostscript C API to bring Ghostscript power to the Node.JS world
 
-To build, and run the module, you must have ``libgs-dev`` installed.
+* [Prerequisites](#prerequisites)
+* [Installation](#install)
+* [Usage](#usage)
+* [Team](#team)
+* [Acknowledgements](#acknowledgements)
+* [License](#license)
 
-On Debian systems, this can be achieved using ``apt-get install libgs-dev``.
+<a name="prerequisites"></a>
+## Prerequisites
 
-In general ``libgs-dev`` install the header files interface to call the Ghostscript C API but you need to check if libgs.so is installed on your system before use it.
+<a name="install"></a>
+## Installation
 
-### Compile C++ source
+<a name="usage"></a>
+## Usage
 
-```bash
-g++ -g -o output-file source-file
-```
-### Compile C source
+<a name="team"></a>
+## The Team
 
-```bash
-cc source-file -o output-file
-```
+### Nicola Del Gobbo
+
+<https://github.com/NickNaso/>
+
+<https://www.npmjs.com/~nicknaso>
+
+<https://twitter.com/NickNaso>
+
+<a name="acknowledgements"></a>
+## Acknowledgements
+
+Thank you to all encouraged me every day.
+
+<a name="license"></a>
+## License
+
+Licensed under [Apache license V2"](./LICENSE).
+
+[Native Abstractions for Node.js]: https://www.npmjs.com/package/nan
+[bindings]: https://www.npmjs.com/package/bindings

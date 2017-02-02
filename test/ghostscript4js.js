@@ -37,7 +37,7 @@ describe("Test ghostscript4js", function () {
   });
 
   it("Should execute Ghostscript command synchronous", function () {
-
+    
   });
 
   it("Should execute Ghostscript command asynchronous", function () {
