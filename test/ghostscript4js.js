@@ -28,7 +28,12 @@ process.chdir(__dirname);
 describe("Test ghostscript4js", function () {
 
   it("Should return the version of Ghoscript", function () {
-    
+      expect(gs.version).not.toThrow();
+      const version = gs.version();
+      expect(version.product).toContain("GPL Ghostscript");
+      expect(version.copyright).toContain("Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.");
+      expect(version.product).not.toBeLessThan(919);
+      expect(version.product).not.toBeLessThan(20160323);
   });
 
   it("Should execute Ghostscript command synchronous", function () {
