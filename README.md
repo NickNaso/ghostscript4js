@@ -21,11 +21,11 @@
 ## Introduction
 
 **Ghostscript** is a suite of software based on an interpreter for Adobe Systems' PostScript and Portable Document Format (PDF)
- page description languages. Its main purposes are the rasterization or rendering of such page description language files,
- for the display or printing of document pages, and the conversion between PostScript and PDF files.
+page description languages. Its main purposes are the rasterization or rendering of such page description language files,
+for the display or printing of document pages, and the conversion between PostScript and PDF files.
 
- Ghostscript can be used as a raster image processor (RIP) for raster computer printers—for instance, as an input filter
- of line printer daemon—or as the RIP engine behind PostScript and PDF viewers.
+Ghostscript can be used as a raster image processor (RIP) for raster computer printers—for instance, as an input filter
+of line printer daemon—or as the RIP engine behind PostScript and PDF viewers.
 
 Ghostscript can also be used as a file format converter, such as PostScript to PDF converter. The **ps2pdf** conversion program,
 which comes with the ghostscript distribution, is described by its documentation as a "work-alike for nearly all the functionality
@@ -42,14 +42,23 @@ Ghostscript has been ported to many operating systems, including Unix-like syste
 
 ### More resource and info about Ghostscript
 
-*[Introduction to Ghostscript](https://www.gnu.org/software/ghostscript/intro.html)
+* [Introduction to Ghostscript](https://www.gnu.org/software/ghostscript/intro.html)
 
-*[Ghostscript on Wikipedia](https://en.wikipedia.org/wiki/Ghostscript)
+* [Ghostscript on Wikipedia](https://en.wikipedia.org/wiki/Ghostscript)
 
-*[Ghostscript documentation](https://www.ghostscript.com/Documentation.html)
+* [Ghostscript documentation](https://www.ghostscript.com/Documentation.html)
 
 <a name="motivations"></a>
-## Motivation
+## Motivations
+
+At time i created this module i do not able to find any module on npm that execute Ghostscript command through its C API,
+otherwise there are some module that call Ghostscript through the execution of the corresponding shell command. This is
+good way to start use some library from node, but there are the following drawbacks:
+
+* **Performance** The call to shell command take more time and more resource than call a library directly from Node.js environment.
+
+* **Errror handler** Sometimes you cannot intercept and handle errors in a good way.
+
 
 <a name="prerequisites"></a>
 ## Prerequisites
