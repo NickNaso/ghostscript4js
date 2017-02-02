@@ -7,12 +7,22 @@
 # Ghostscript4JS 
 ## This module binds the Ghostscript C API to bring its power to the Node.JS world
 
+* [Introduction](#introduction)
+* [Motivations](#motivations)
 * [Prerequisites](#prerequisites)
 * [Installation](#install)
 * [Usage](#usage)
 * [Team](#team)
 * [Acknowledgements](#acknowledgements)
 * [License](#license)
+
+
+<a name="introduction"></a>
+## Introduction
+
+
+<a name="motivations"></a>
+## Motivation
 
 <a name="prerequisites"></a>
 ## Prerequisites
