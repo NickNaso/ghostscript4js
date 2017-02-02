@@ -69,7 +69,13 @@ to not block the event loop, so all request will be served whiout any delay orig
 
 Before install Ghostscript4JS youe need to assure you have been installed the following preequisites:
 
-* Node.JS 
+* Install **Node.JS** see: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
+
+* Install **Node.js native addon build tool** see: [node-gyp](https://github.com/nodejs/node-gyp)
+
+* Install **Ghostscript** for your Operating System.
+  * [Installation from official documentation](https://ghostscript.com/doc/current/Install.htm)
+  * [Download](https://ghostscript.com/download/gsdnld.html)
 
 <a name="install"></a>
 ## Installation
