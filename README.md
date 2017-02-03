@@ -121,14 +121,59 @@ try {
   // Take decision based on Ghostscript version
   const version = gs.version()
   console.log(version)
-  gs.executeSync("-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf")
+  gs.executeSync('-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf')
 } catch (err) {
   // Handle error
   throw err
 }
 ```
 
+## API
 
+### version
+
+Version method return an object that contains information about version of Ghostscript library
+installed on the system. It is important in those circumstances where you have to take
+decision based on different version.
+The returned data aee similar to the example repoted below:
+
+```JavaScript
+{
+  product: "GPL Ghostscript",
+  copyright: "Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.",
+  revision: 919,
+  revisiondate: 20160323
+}
+```
+
+This is a synchronous method and return the version info or throw an Error to indicate that
+something was wrong in executing it.
+
+### Example
+
+```JavaScript
+'use strict'
+
+const gs = require('ghostscript4js')
+
+try {
+  const version = gs.version()
+  console.log(version)
+  // Take decision based on Ghostscript version
+  if (version.revision > 916) {
+    // ... some stuff
+  } else {
+    // ... other stuff
+  }
+} catch (err) {
+  // Handle error
+  throw err
+}
+```
+
+### executeSync
+
+### execute
 
 <a name="team"></a>
 ## The Team

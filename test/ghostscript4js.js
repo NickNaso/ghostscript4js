@@ -30,6 +30,7 @@ describe("Test ghostscript4js", function () {
   it("Should return the version of Ghoscript", function () {
       expect(gs.version).not.toThrow();
       const version = gs.version();
+      console.log(version);
       expect(version.product).toContain("GPL Ghostscript");
       expect(version.copyright).toContain("Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.");
       expect(version.product).not.toBeLessThan(gs.MIN_SUPPORTED_REVISION);
