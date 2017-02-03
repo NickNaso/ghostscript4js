@@ -19,6 +19,14 @@
 #ifndef GHOSTSCRIPT4JS_H
 #define GHOSTSCRIPT4JS_H
 
+#if defined(_WIN32) && !defined(_Windows)
+#define _Windows
+#endif
+#ifdef _Windows
+#include <windows.h>
+#define GSDLLEXPORT __declspec(dllimport)
+#endif
+
 #include <sstream>
 #include <string>
 
