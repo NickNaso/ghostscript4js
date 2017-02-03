@@ -240,10 +240,10 @@ errors code.
 ### Min and Max supported revision
 
 This module was builded based on Ghostscript C API that is compatible with some specifica versions. The module has two
-properties  MIN_SUPPORTED_REVISION and  MAX_SUPPORTED_REVISION which respectively indicate the maximum and minimum of supported
+properties  **MIN_SUPPORTED_REVISION** and  **MAX_SUPPORTED_REVISION** which respectively indicate the maximum and minimum of supported
 Ghostscript's version.
 
-### Example - Min and Max supported revision
+#### Example - Min and Max supported revision
 
 ```JavaScript
 'use strict'
