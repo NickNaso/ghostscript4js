@@ -255,7 +255,6 @@ console.log(gs.MAX_SUPPORTED_REVISION)
 
 ```
 
-
 <a name="team"></a>
 ## The Team
 
