@@ -230,6 +230,32 @@ gs.execute(cmd)
 
 ```
 
+### Error
+
+The error raised from **ghostscript4js** in all of its method is an instance of Error object that cointains a message that
+describe what happened and at the same time cointains the Ghostscript error code so you can inspect what ahhpened in a better
+way. At this link [Ghostscript error codes](https://ghostscript.com/doc/current/API.htm#return_codes) you can find all Ghostscript
+errors code.
+
+### Min and Max supported revision
+
+This module was builded based on Ghostscript C API that is compatible with some specifica versions. The module has two
+properties  MIN_SUPPORTED_REVISION and  MAX_SUPPORTED_REVISION which respectively indicate the maximum and minimum of supported
+Ghostscript's version.
+
+### Example - Min and Max supported revision
+
+```JavaScript
+'use strict'
+
+const gs = require('ghostscript4js')
+
+console.log(gs.MIN_SUPPORTED_REVISION)
+console.log(gs.MAX_SUPPORTED_REVISION)
+
+```
+
+
 <a name="team"></a>
 ## The Team
 
