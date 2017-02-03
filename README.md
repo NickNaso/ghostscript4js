@@ -132,7 +132,7 @@ try {
 
 ### version
 
-Version method return an object that contains information about version of Ghostscript library
+**version()** method return an object that contains information about version of Ghostscript library
 installed on the system. It is important in those circumstances where you have to take
 decision based on different version.
 The returned data aee similar to the example repoted below:
@@ -149,7 +149,7 @@ The returned data aee similar to the example repoted below:
 This is a synchronous method and return the version info or throw an Error to indicate that
 something was wrong in executing it.
 
-### Example
+#### Example - version
 
 ```JavaScript
 'use strict'
@@ -173,7 +173,62 @@ try {
 
 ### executeSync
 
+**executeSync(cmd)** method take the Ghostscript command parameters in input as a string and execute it in a synchronous way.
+If something wrong happens in calling this method an Error with description and code error will be thrown.
+
+#### Example - executeSync
+
+```JavaScript
+'use strict'
+
+const gs = require('ghostscript4js')
+
+try {
+  gs.executeSync('-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf')
+} catch (err) {
+  // Handle error
+  throw err
+}
+```
+
 ### execute
+
+**execute(cmd, callback)** method take in input the Ghostscript command parameters as a string and an optional callbackand. The execution will be asynchronous so
+this ensure better performance especially in a web application enviroment, because the Node.Js event loop will not block.
+This method has optional callback function as input in that case a possible error will be handled by this function. If noone function will be provided the method
+return a Promise that will be resolved or rejected all as reported in the following example.
+
+#### Example - execute
+
+```JavaScript
+'use strict'
+
+const gs = require('ghostscript4js')
+
+let cmd = '-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf'
+gs.execute(cmd, function (err) {
+  if (err) {
+    console.log("Ooops... something wrong happened")
+  }
+})
+
+```
+
+```JavaScript
+'use strict'
+
+const gs = require('ghostscript4js')
+
+let cmd = '-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf'
+gs.execute(cmd)
+.then(() => {
+  console.log("All is ok")
+})
+.catch((err) => {
+ console.log("Ooops... something wrong happened")
+})
+
+```
 
 <a name="team"></a>
 ## The Team
