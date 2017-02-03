@@ -112,6 +112,24 @@ npm install ghostscript4js --save
 <a name="usage"></a>
 ## Usage
 
+```JavaScript
+'use strict'
+
+const gs = require('ghostscript4js')
+
+try {
+  // Take decision based on Ghostscript version
+  const version = gs.version()
+  console.log(version)
+  gs.executeSync("-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf")
+} catch (err) {
+  // Handle error
+  throw err
+}
+```
+
+
+
 <a name="team"></a>
 ## The Team
 
