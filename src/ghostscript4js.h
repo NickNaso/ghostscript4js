@@ -19,6 +19,15 @@
 #ifndef GHOSTSCRIPT4JS_H
 #define GHOSTSCRIPT4JS_H
 
+#if defined(_WIN32) && !defined(_Windows)
+#define _Windows
+#endif
+#ifdef _Windows
+//#define _WINSOCKAPI_ 
+//#include <windows.h>
+#define GSDLLEXPORT __declspec(dllimport)
+#endif
+
 #include <sstream>
 #include <string>
 
@@ -27,9 +36,10 @@
 #include <v8.h>
 #include <nan.h>
 
-#include <ghostscript/gdevdsp.h>
-#include <ghostscript/iapi.h>
-#include <ghostscript/ierrors.h>
+#include "gdevdsp.h"
+#include "gserrors.h"
+#include "ierrors.h"
+#include "iapi.h"
 
 using namespace Nan;
 using namespace v8;
