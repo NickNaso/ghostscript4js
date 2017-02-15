@@ -32,9 +32,9 @@ class GhostscriptWorker : public AsyncWorker {
                 explodedCmd.push_back(RAWcmd);
             void *minst;
             int code, exit_code;
-            char * gsargv[explodedCmd.size()];
-            int gsargc = explodedCmd.size();
-            for(unsigned int i = 0; i < explodedCmd.size(); i++) {
+            int gsargc = static_cast<int>(explodedCmd.size());
+            char ** gsargv = new char*[gsargc];
+            for(int i = 0; i < gsargc; i++) {
                 gsargv[i] = (char*)explodedCmd[i].c_str();
             }
             code = gsapi_new_instance(&minst, NULL);
@@ -120,9 +120,9 @@ NAN_METHOD(ExecuteSync)
         explodedCmd.push_back(RAWcmd);
     void *minst;
     int code, exit_code;
-    char * gsargv[explodedCmd.size()];
-    int gsargc = explodedCmd.size();
-    for(unsigned int i = 0; i < explodedCmd.size(); i++) {
+    int gsargc = static_cast<int>(explodedCmd.size());    
+    char ** gsargv = new char*[gsargc];
+    for(int i = 0; i < gsargc; i++) {
         gsargv[i] = (char*)explodedCmd[i].c_str();
     }
     code = gsapi_new_instance(&minst, NULL);
