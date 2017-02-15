@@ -56,7 +56,8 @@ class GhostscriptWorker : public AsyncWorker {
                     msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
                     res = 1;
                 }        
-            }     
+            }
+            delete[] gsargv;     
         }
 
         void HandleOKCallback() {
@@ -127,6 +128,7 @@ NAN_METHOD(ExecuteSync)
     }
     code = gsapi_new_instance(&minst, NULL);
     if (code < 0) {
+        delete[] gsargv;
         stringstream msg; 
         msg << "Sorry error happened creating Ghostscript instance. Error code: " << code;
         return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
@@ -140,8 +142,10 @@ NAN_METHOD(ExecuteSync)
 	code = exit_code;
     gsapi_delete_instance(minst);
     if ((code == 0) || (code == gs_error_Quit)) {
-       return;
+        delete[] gsargv;
+        return;
     } else {
+        delete[] gsargv;
         stringstream msg; 
         msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
         return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
