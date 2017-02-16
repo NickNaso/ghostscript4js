@@ -9,28 +9,62 @@
       "conditions": [
         ['OS=="linux"', {
           'variables': {
-            "GS4JS_LIB%": "<!(echo $GS4JS_ENV_LIB)",
+            "GS4JS_HOME%": "<!(echo $GS4JS_ENV_HOME)",
+            "GS4JS_LIB%": "libgs.so",
             "conditions": [
-              ['"<!(echo $GS4JS_ENV_LIB)" == ""', {
-                "GS4JS_LIB%": "/usr/lib/x86_64-linux-gnu/libgs.so"
-              }]
-            ],
-          },
-          "libraries": ["<(GS4JS_LIB)"]
-        }],
-        ['OS=="win"', {
-           
-        }],
-        ['OS=="mac"', {
-          'variables': {
-            "GS4JS_LIB%": "<!(echo $GS4JS_ENV_LIB)",
-            "conditions": [
-              ['"<!(echo $GS4JS_ENV_LIB)" == ""', {
-                "GS4JS_LIB%": "/usr/local/lib/libgs.dylib"
+              ['"<!(echo $GS4JS_ENV_HOME)" == ""', {
+                "GS4JS_HOME%": "/usr/lib/x86_64-linux-gnu"
               }]
             ]
           },
-          "libraries": ["<(GS4JS_LIB)"]
+          "libraries": ["<(GS4JS_HOME)/<(GS4JS_LIB)"]
+        }],
+        ['OS=="win"', {
+          "conditions": [
+            ['target_arch=="x64"', {
+              "variables": {
+                "GS4JS_HOME%": "<!(echo %GS4JS_ENV_HOME%)",
+                "GS4JS_LIB%": "gsdll64.lib",
+                "GS4JS_DLL%": "gsdll64.dll",
+                "conditions": [
+                  ['"<!(echo $GS4JS_ENV_HOME)" == ""', {
+                    "GS4JS_HOME%": "C:/gs/bin"
+                  }]
+                ]
+              }
+            }, 
+            {
+              "variables": { 
+                "GS4JS_HOME%": "<!(echo %GS4JS_ENV_HOME%)",
+                "GS4JS_LIB%": "gsdll32.lib",
+                "GS4JS_DLL%": "gsdll32.dll",
+                "conditions": [
+                  ['"<!(echo $GS4JS_ENV_HOME)" == ""', {
+                    "GS4JS_HOME%": "C:/gs/bin"
+                  }]
+                ]
+              }
+            }]
+          ],
+          "libraries": ["<(module_root_dir)/build/Release/<(GS4JS_LIB)"],
+          "copies": [
+            {
+              "destination": "<(module_root_dir)/build/Release",
+              "files": ["<(GS4JS_HOME)/<(GS4JS_DLL)", "<(GS4JS_HOME)/<(GS4JS_LIB)"]
+            }
+          ]
+        }],
+        ['OS=="mac"', {
+          'variables': {
+            "GS4JS_HOME%": "<!(echo $GS4JS_ENV_HOME)",
+            "GS4JS_LIB%": "libgs.dylib",
+            "conditions": [
+              ['"<!(echo $GS4JS_ENV_HOME)" == ""', {
+                "GS4JS_HOME%": "/usr/local/lib"
+              }]
+            ]
+          },
+          "libraries": ["<(GS4JS_LIB)/<(GS4JS_LIB)"]
         }]
       ]
     }
