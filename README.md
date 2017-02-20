@@ -77,7 +77,37 @@ Before install Ghostscript4JS youe need to assure you have been installed the fo
 
 ## Linux
 
+### Debian systems
+
+Install Ghostscript
+
+```bash
+sudo apt-get install ghostscript
+```
+
+then
+
+```bash
+sudo apt-get install libgs-dev
+```
+
+At this point you need to set enviroment variable **GS4JS_HOME** to  ```/usr/lib/x86_64-linux-gnu```
+
+### Red Hat | Fedora
+
+```bash
+yum install ghostscript
+```
+
+then
+
+```bash
+yum install ghostscript-devel
+```
+
 ## Windows
+
+Download last Ghostscript version for your platform [x86](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs920/gs920w32.exe) or [x64](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs920/gs920w64.exe)
 
 ## MacOS
 
