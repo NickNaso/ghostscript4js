@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://github.com/NickNaso/ghostscript4js/blob/master/node-love-ghostscript.png"/>
+<img src="https://raw.githubusercontent.com/NickNaso/ghostscript4js/master/node-love-ghostscript.png"/>
 </p>
 
 # Ghostscript4JS 
