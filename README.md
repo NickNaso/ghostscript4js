@@ -173,15 +173,15 @@ npm install ghostscript4js --save
 
 The module ghostscript4js allow you to use some installation options
 
-* **--GS4JS_HOME** Set the GS4JS_HOME variable that represent the path in your system where is located the ghostscript library
+**--GS4JS_HOME** Set the GS4JS_HOME variable that represent the path in your system where is located the ghostscript library
 
 Es. ```npm install ghostscript4js --GS4JS_HOME="C:/gs/bin"```
 
-* **--GS4JS_LIB** Set the GS4JS_LIB variable that represent the file name for the ghostscript library installed in your system
+**--GS4JS_LIB** Set the GS4JS_LIB variable that represent the file name for the ghostscript library installed in your system
 
 Es. ```npm install ghostscript4js --GS4JS_LIB="libgs.so"```
 
-* **--GS4JS_LIB** Set the GS4JS_DLL variable that represent the file name for the ghostscript DLL installed in your windows system
+**--GS4JS_DLL** Set the GS4JS_DLL variable that represent the file name for the ghostscript DLL installed in your windows system
 
 Es. ```npm install ghostscript4js --GS4JS_DLL="gsdll64.dll"```
 
