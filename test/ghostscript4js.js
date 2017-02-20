@@ -22,15 +22,24 @@
  * Module dependencies
  */
 const gs = require('../')
+const fs = require('fs')
 
 process.chdir(__dirname) 
+
+const pdf = 'node-love-ghostscript.pdf'
+const pngSync = 'node-love-ghostscript-sync.png'
+const pngAsync = 'node-love-ghostscript-async.png'
+const cmdSync = `-sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
+const cmdAsync = `-sDEVICE=pngalpha -o ${pngAsync} -sDEVICE=pngalpha -r144 ${pdf}`
+
+fs.unlinkSync(pngSync)
+fs.unlinkSync(pngAsync)
 
 describe("Test ghostscript4js", function () {
 
   it("Should return the version of Ghoscript", function () {
       expect(gs.version).not.toThrow()
       const version = gs.version()
-      console.log(version)
       expect(version.product).toContain("GPL Ghostscript")
       expect(version.copyright).toContain("Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.")
       expect(version.product).not.toBeLessThan(gs.MIN_SUPPORTED_REVISION)
@@ -38,11 +47,22 @@ describe("Test ghostscript4js", function () {
   })
 
   it("Should execute Ghostscript command synchronous", function () {
-    
+    try {
+      gs.executeSync(cmdSync)
+    } catch (err) {
+      // Handle error
+      throw err
+    }
   })
 
-  it("Should execute Ghostscript command asynchronous", function () {
-       
+  it("Should execute Ghostscript command asynchronous", function (done) {
+    gs.execute(cmdAsync)
+    .then(() => {
+      done()
+    })
+    .catch((err) => {
+      done()
+    })   
   })
 
 })
