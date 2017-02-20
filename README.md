@@ -1,5 +1,5 @@
 <p align="center">
-<img src="node-love-ghostscript.png"/>
+<img src="https://github.com/NickNaso/ghostscript4js/blob/master/node-love-ghostscript.png"/>
 </p>
 
 # Ghostscript4JS 
@@ -17,6 +17,7 @@
 
 
 <a name="introduction"></a>
+
 ## Introduction
 
 **Ghostscript** is a suite of software based on an interpreter for Adobe Systems' PostScript and Portable Document Format (PDF)
@@ -48,6 +49,7 @@ Ghostscript has been ported to many operating systems, including Unix-like syste
 * [Ghostscript documentation](https://www.ghostscript.com/Documentation.html)
 
 <a name="motivations"></a>
+
 ## Motivations
 
 At time i created this module i do not able to find any module on npm that execute Ghostscript command through its C API,
@@ -66,6 +68,7 @@ to not block the event loop, so all request will be served whiout any delay orig
 [Understanding Node.js event loop](https://nodesource.com/blog/understanding-the-nodejs-event-loop/)
 
 <a name="prerequisites"></a>
+
 ## Prerequisites
 
 Before install Ghostscript4JS youe need to assure you have been installed the following preequisites:
@@ -137,6 +140,7 @@ brew install ghostscript
 * [Download Ghostscript](https://ghostscript.com/download/gsdnld.html)
 
 <a name="install"></a>
+
 ## Installation
 
 If you want use ghostscript4js you have to install it. There are two methods for that:
@@ -169,6 +173,7 @@ npm install ghostscript4js --save
 ```
 
 <a name="installoptions"></a>
+
 ## Installation options
 
 The module ghostscript4js allow you to use some installation options that you can use when in your operating system something is different against standard installation.
@@ -188,6 +193,7 @@ Es. ```npm install ghostscript4js --GS4JS_LIB="libgs.so"```
 Es. ```npm install ghostscript4js --GS4JS_DLL="gsdll64.dll"```
 
 <a name="usage"></a>
+
 ## Usage
 
 ```JavaScript
@@ -334,6 +340,7 @@ console.log(gs.MAX_SUPPORTED_REVISION)
 ```
 
 <a name="team"></a>
+
 ## The Team
 
 ### Nicola Del Gobbo
