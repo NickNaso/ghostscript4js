@@ -181,6 +181,8 @@ Es. ```npm install ghostscript4js --GS4JS_HOME="C:/gs/bin"```
 
 Es. ```npm install ghostscript4js --GS4JS_LIB="libgs.so"```
 
+### Only for Windows
+
 **--GS4JS_DLL** Set the GS4JS_DLL variable that represent the file name for the ghostscript DLL installed in your windows system
 
 Es. ```npm install ghostscript4js --GS4JS_DLL="gsdll64.dll"```
