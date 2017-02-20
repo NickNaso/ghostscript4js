@@ -74,8 +74,18 @@ Before install Ghostscript4JS youe need to assure you have been installed the fo
 * Install **Node.js native addon build tool** see: [node-gyp](https://github.com/nodejs/node-gyp)
 
 * Install **Ghostscript** for your Operating System.
-  * [Installation from official documentation](https://ghostscript.com/doc/current/Install.htm)
-  * [Download Ghostscript](https://ghostscript.com/download/gsdnld.html)
+
+## Linux
+
+## Windows
+
+## MacOS
+
+## Official installation guide to install Ghostscript
+
+* [Installation from official documentation](https://ghostscript.com/doc/current/Install.htm)
+
+* [Download Ghostscript](https://ghostscript.com/download/gsdnld.html)
 
 <a name="install"></a>
 ## Installation
