@@ -171,7 +171,7 @@ npm install ghostscript4js --save
 <a name="installoptions"></a>
 ## Installation options
 
-The module ghostscript4js allow you to use some installation options
+The module ghostscript4js allow you to use some installation options that you can use when in your operating system something is different against standard installation.
 
 **--GS4JS_HOME** Set the GS4JS_HOME variable that represent the path in your system where is located the ghostscript library
 
