@@ -115,9 +115,19 @@ In general based on your Linux OS and architecture you have to set environment v
 
 * Install Ghostscript on your system for example in ```C:\gs```
 
-* Add enviroment variable **GS4JS_HOME** to point on a folder contains Ghostscript DLL and Library files (Es. gsdll64.dll and gsdll64.lib) typically they are located in bin folder of you ghostscript installation for example ```C:\gs\bin```
+* Add enviroment variable **GS4JS_HOME** to point on a folder contains Ghostscript DLL and Library files (Es. gsdll64.dll and gsdll64.lib) typically they are located in **bin** folder of you ghostscript installation for example ```C:\gs\bin```
 
-## MacOS
+## macOS
+
+* Install Homebrew following the official guide [here](https://brew.sh/index_it.html)
+
+* Open terminal and install Ghostscript
+
+```bash
+brew install ghostscript
+```
+
+* Set environment variable **GS4JS_HOME** to ```/usr/local/lib```
 
 ## Official installation guide to install Ghostscript
 
