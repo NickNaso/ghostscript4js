@@ -171,6 +171,12 @@ npm install ghostscript4js --save
 <a name="installoptions"></a>
 ## Installation options
 
+The module ghostscript4js allow you to use three different installation options
+
+* **--GS4JS_HOME** Set the GS4JS_HOME variable 
+
+Es. ```npm install ghostscript4js --GS4JS_HOME="C:/gs/bin"```
+
 <a name="usage"></a>
 ## Usage
 
