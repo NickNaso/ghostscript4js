@@ -64,7 +64,7 @@
               }]
             ]
           },
-          "libraries": ["<(GS4JS_LIB)/<(GS4JS_LIB)"]
+          "libraries": ["<(GS4JS_HOME)/<(GS4JS_LIB)"]
         }]
       ]
     }
