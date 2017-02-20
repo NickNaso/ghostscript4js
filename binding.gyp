@@ -23,11 +23,11 @@
           "conditions": [
             ['target_arch=="x64"', {
               "variables": {
-                "GS4JS_HOME%": "<!(echo %GS4JS_ENV_HOME%)",
+                "GS4JS_HOME%": "<!(node gs4js-env-home.js)",  
                 "GS4JS_LIB%": "gsdll64.lib",
                 "GS4JS_DLL%": "gsdll64.dll",
                 "conditions": [
-                  ['"<!(echo $GS4JS_ENV_HOME)" == ""', {
+                  ['"<!(node gs4js-env-home.js)" == ""', {
                     "GS4JS_HOME%": "C:/gs/bin"
                   }]
                 ]
@@ -35,11 +35,11 @@
             }, 
             {
               "variables": { 
-                "GS4JS_HOME%": "<!(echo %GS4JS_ENV_HOME%)",
+                "GS4JS_HOME%": "<!(node gs4js-env-home.js)",  
                 "GS4JS_LIB%": "gsdll32.lib",
                 "GS4JS_DLL%": "gsdll32.dll",
                 "conditions": [
-                  ['"<!(echo $GS4JS_ENV_HOME)" == ""', {
+                  ['"<!(node gs4js-env-home.js)" == ""', {
                     "GS4JS_HOME%": "C:/gs/bin"
                   }]
                 ]
@@ -64,7 +64,7 @@
               }]
             ]
           },
-          "libraries": ["<(GS4JS_LIB)/<(GS4JS_LIB)"]
+          "libraries": ["<(GS4JS_HOME)/<(GS4JS_LIB)"]
         }]
       ]
     }
