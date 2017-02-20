@@ -9,6 +9,7 @@
 * [Motivations](#motivations)
 * [Prerequisites](#prerequisites)
 * [Installation](#install)
+* [Installation options](#installoptions)
 * [Usage](#usage)
 * [Team](#team)
 * [Acknowledgements](#acknowledgements)
@@ -166,6 +167,9 @@ launch this command:
 ```console
 npm install ghostscript4js --save
 ```
+
+<a name="installoptions"></a>
+## Installation options
 
 <a name="usage"></a>
 ## Usage
