@@ -266,6 +266,14 @@ console.log(gs.MAX_SUPPORTED_REVISION)
 
 <https://twitter.com/NickNaso>
 
+### Mauro Doganieri
+
+<https://github.com/mauro-d>
+
+<https://www.npmjs.com/~mauro-d>
+
+<https://twitter.com/maurodoganieri>
+
 <a name="acknowledgements"></a>
 ## Acknowledgements
 
