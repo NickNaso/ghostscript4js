@@ -105,6 +105,10 @@ then
 yum install ghostscript-devel
 ```
 
+At this point you need to set enviroment variable **GS4JS_HOME** to  ```/usr/lib64``` or ```/usr/lib``` based on you architecture
+
+In general based on your Linux OS and architecture you have to set environment variable **GS4JS_HOME** to point on folder contains ```**libgs.so**``` library.
+
 ## Windows
 
 Download last Ghostscript version for your platform [x86](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs920/gs920w32.exe) or [x64](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs920/gs920w64.exe)
