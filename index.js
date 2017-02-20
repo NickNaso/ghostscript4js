@@ -14,8 +14,9 @@
  *
  * Contributors - initial API implementation:
  * Nicola Del Gobbo <nicoladelgobbo@gmail.com>
+ * Mauro Doganieri <mauro.doganieri@gmail.com>
  ******************************************************************************/
 
-'use strict';
+'use strict'
 
-module.exports = require('./lib');
+module.exports = require('./lib')

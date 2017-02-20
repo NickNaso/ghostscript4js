@@ -14,6 +14,7 @@
  *
  * Contributors - initial API implementation:
  * Nicola Del Gobbo <nicoladelgobbo@gmail.com>
+ * Mauro Doganieri <mauro.doganieri@gmail.com>
  ******************************************************************************/
 
 'use strict';
@@ -32,21 +33,27 @@ const pngAsync = 'node-love-ghostscript-async.png'
 const cmdSync = `-sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
 const cmdAsync = `-sDEVICE=pngalpha -o ${pngAsync} -sDEVICE=pngalpha -r144 ${pdf}`
 
-fs.unlinkSync(pngSync)
-fs.unlinkSync(pngAsync)
+console.log('Start cleanup ...')
+try {
+  fs.unlinkSync(pngSync)
+  fs.unlinkSync(pngAsync)
+  console.log('Cleanup competed')
+} catch (err) {
+  console.log('Nothing to clean');
+}
 
-describe("Test ghostscript4js", function () {
+describe('Test ghostscript4js', function () {
 
-  it("Should return the version of Ghoscript", function () {
+  it('Should return the version of Ghoscript', function () {
       expect(gs.version).not.toThrow()
       const version = gs.version()
-      expect(version.product).toContain("GPL Ghostscript")
-      expect(version.copyright).toContain("Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.")
+      expect(version.product).toContain('GPL Ghostscript')
+      expect(version.copyright).toContain('Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.')
       expect(version.product).not.toBeLessThan(gs.MIN_SUPPORTED_REVISION)
       expect(version.product).not.toBeLessThan(20160323)
   })
 
-  it("Should execute Ghostscript command synchronous", function () {
+  it('Should execute Ghostscript command synchronous', function () {
     try {
       gs.executeSync(cmdSync)
     } catch (err) {
@@ -55,7 +62,7 @@ describe("Test ghostscript4js", function () {
     }
   })
 
-  it("Should execute Ghostscript command asynchronous", function (done) {
+  it('Should execute Ghostscript command asynchronous', function (done) {
     gs.execute(cmdAsync)
     .then(() => {
       done()

@@ -14,6 +14,7 @@
  *
  * Contributors - initial API implementation:
  * Nicola Del Gobbo <nicoladelgobbo@gmail.com>
+ * Mauro Doganieri <mauro.doganieri@gmail.com>
  ******************************************************************************/
 
 #include "ghostscript4js.h"
