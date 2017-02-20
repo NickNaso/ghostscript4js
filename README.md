@@ -360,11 +360,13 @@ console.log(gs.MAX_SUPPORTED_REVISION)
 <https://twitter.com/maurodoganieri>
 
 <a name="acknowledgements"></a>
+
 ## Acknowledgements
 
 Thank you to all people that encourage me every day.
 
 <a name="license"></a>
+
 ## License
 
 Licensed under [Apache license V2](./LICENSE)
