@@ -196,7 +196,7 @@ Es. ```npm install ghostscript4js --GS4JS_DLL="gsdll64.dll"```
 
 ## Usage
 
-```JavaScript
+```js
 'use strict'
 
 const gs = require('ghostscript4js')
@@ -221,7 +221,7 @@ installed on the system. It is important in those circumstances where you have t
 decision based on different version.
 The returned data aee similar to the example repoted below:
 
-```JavaScript
+```js
 {
   product: "GPL Ghostscript",
   copyright: "Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.",
@@ -235,7 +235,7 @@ something was wrong in executing it.
 
 #### Example - version
 
-```JavaScript
+```js
 'use strict'
 
 const gs = require('ghostscript4js')
@@ -262,7 +262,7 @@ If something wrong happens in calling this method an Error with description and 
 
 #### Example - executeSync
 
-```JavaScript
+```js
 'use strict'
 
 const gs = require('ghostscript4js')
@@ -284,7 +284,7 @@ return a Promise that will be resolved or rejected all as reported in the follow
 
 #### Example - execute
 
-```JavaScript
+```js
 'use strict'
 
 const gs = require('ghostscript4js')
@@ -298,7 +298,7 @@ gs.execute(cmd, function (err) {
 
 ```
 
-```JavaScript
+```js
 'use strict'
 
 const gs = require('ghostscript4js')
@@ -329,7 +329,7 @@ Ghostscript's version.
 
 #### Example - Min and Max supported revision
 
-```JavaScript
+```js
 'use strict'
 
 const gs = require('ghostscript4js')
