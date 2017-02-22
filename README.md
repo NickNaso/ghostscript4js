@@ -33,7 +33,7 @@ which comes with the ghostscript distribution, is described by its documentation
 ghostscript's pdfwrite output device, which supports PDF/A-1 and PDF/A-2 as well as PDF/X-3 output.[3]
 
 Ghostscript can also serve as the back-end for **PDF** to **raster image** (png, tiff, jpeg, etc.) converter; this is often
-combined with a PostScript printer driver in "virtual printer" PDF creators.[citation needed]
+combined with a PostScript printer driver in "virtual printer" PDF creators.
 
 As it takes the form of a language interpreter, Ghostscript can also be used as a general purpose programming environment.
 
