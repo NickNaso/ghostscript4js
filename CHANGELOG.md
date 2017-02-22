@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5 / 2017-02-22
+
+* Fix in documentation of **`ghostscript4js`**.
+
 ## 1.0.3 / 2017-02-20
 
 * Fix in documentation of **`ghostscript4js`**.
