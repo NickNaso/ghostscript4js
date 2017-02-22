@@ -52,18 +52,16 @@ Ghostscript has been ported to many operating systems, including Unix-like syste
 
 ## Motivations
 
-At time i created this module i do not able to find any module on npm that execute Ghostscript command through its C API,
-otherwise there are some module that call Ghostscript through the execution of the corresponding shell command. This is
-good way to start use some library from node, but there are the following drawbacks:
+At the time i created this module i was not able to find any module on npm that execute Ghostscript command through its C API,
+otherwise there were some module that call Ghostscript through the execution of the corresponding shell command. This is a
+good way to start using some library from node, but there are the following drawbacks:
 
-* **Performance** - The call to the shell command take more time and more resources than call a library C or C++ API directly
+* **Performance** - The call to the shell command take more time and more resources than calling a library C or C++ API directly from Node.js environment.
 
-from Node.js environment.
+* **Errror handler** - Sometimes you cannot intercept and handle errors in a good and a proper way.
 
-* **Errror handler** - Sometimes you cannot intercept and handle errors in a good and proper way.
-
-To fit all needs Ghostscript4JS has sync and async method so it could be used in a web application where it's very important
-to not block the event loop, so all request will be served whiout any delay originated by our application.
+To fit all needs Ghostscript4JS has sync and async methods so it could be used in a web application where it's very important
+to not block the event loop, so all requests will be served without any delay originated by our application.
 
 [Understanding Node.js event loop](https://nodesource.com/blog/understanding-the-nodejs-event-loop/)
 
@@ -71,13 +69,13 @@ to not block the event loop, so all request will be served whiout any delay orig
 
 ## Prerequisites
 
-Before install Ghostscript4JS youe need to assure you have been installed the following preequisites:
+Before installing Ghostscript4JS you need to assure you have the following prerequisites:
 
-* Install **Node.JS** see: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
+* **Node.JS** see: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
 
-* Install **Node.js native addon build tool** see: [node-gyp](https://github.com/nodejs/node-gyp)
+* **Node.js native addon build tool** see: [node-gyp](https://github.com/nodejs/node-gyp)
 
-* Install **Ghostscript** for your Operating System.
+* **Ghostscript** for your Operating System.
 
 ## Linux
 
@@ -95,7 +93,7 @@ then
 sudo apt-get install libgs-dev
 ```
 
-At this point you need to set enviroment variable **GS4JS_HOME** to  ```/usr/lib/x86_64-linux-gnu```
+At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib/x86_64-linux-gnu```
 
 ### Red Hat | Fedora
 
@@ -109,17 +107,17 @@ then
 yum install ghostscript-devel
 ```
 
-At this point you need to set enviroment variable **GS4JS_HOME** to  ```/usr/lib64``` or ```/usr/lib``` based on you architecture
+At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib64``` or ```/usr/lib``` based on you architecture
 
-In general based on your Linux OS and architecture you have to set environment variable **GS4JS_HOME** to point on folder contains ```libgs.so``` library.
+In general, based on your Linux OS and architecture, you have to set the environment variable **GS4JS_HOME** to point on folder containing ```libgs.so``` library.
 
 ## Windows
 
 * Download last Ghostscript version for your platform [x86](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs920/gs920w32.exe) or [x64](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs920/gs920w64.exe)
 
-* Install Ghostscript on your system for example in ```C:\gs```
+* Install Ghostscript on your system, for example in ```C:\gs```
 
-* Add enviroment variable **GS4JS_HOME** to point on a folder contains Ghostscript DLL and Library files (Es. gsdll64.dll and gsdll64.lib) typically they are located in **bin** folder of you ghostscript installation for example ```C:\gs\bin```
+* Add the environment variable **GS4JS_HOME** to point to a folder containing Ghostscript's DLL and Library files (Es. gsdll64.dll and gsdll64.lib). Typically, they are located in **bin** folder of you ghostscript installation, for example ```C:\gs\bin```
 
 ## macOS
 
@@ -131,7 +129,7 @@ In general based on your Linux OS and architecture you have to set environment v
 brew install ghostscript
 ```
 
-* Set environment variable **GS4JS_HOME** to ```/usr/local/lib```
+* Set the environment variable **GS4JS_HOME** to ```/usr/local/lib```
 
 ## Official installation guide to install Ghostscript
 
@@ -143,7 +141,7 @@ brew install ghostscript
 
 ## Installation
 
-If you want use ghostscript4js you have to install it. There are two methods for that:
+If you want to use ghostscript4js you have to install it. There are two methods for that:
 
 In dependencies of your ```package.json``` add the following item:
 
@@ -176,19 +174,19 @@ npm install ghostscript4js --save
 
 ## Installation options
 
-The module ghostscript4js allow you to use some installation options that you can use when in your operating system something is different against standard installation.
+The module ghostscript4js allows you to use some installation options that you can use when in your operating system something is different against standard installation.
 
-**--GS4JS_HOME** Set the GS4JS_HOME variable that represent the path in your system where is located the ghostscript library
+**--GS4JS_HOME** Set the GS4JS_HOME variable that represents the path in your system where is located the ghostscript library
 
 Es. ```npm install ghostscript4js --GS4JS_HOME="C:/gs/bin"```
 
-**--GS4JS_LIB** Set the GS4JS_LIB variable that represent the file name for the ghostscript library installed in your system
+**--GS4JS_LIB** Set the GS4JS_LIB variable that represents the file name for the ghostscript library installed in your system
 
 Es. ```npm install ghostscript4js --GS4JS_LIB="libgs.so"```
 
 ### Only for Windows
 
-**--GS4JS_DLL** Set the GS4JS_DLL variable that represent the file name for the ghostscript DLL installed in your windows system
+**--GS4JS_DLL** Set the GS4JS_DLL variable that represents the file name for the ghostscript DLL installed in your windows system
 
 Es. ```npm install ghostscript4js --GS4JS_DLL="gsdll64.dll"```
 
@@ -216,10 +214,10 @@ try {
 
 ### version
 
-**version()** method return an object that contains information about version of Ghostscript library
+**version()** method returns an object that contains information about version of Ghostscript library
 installed on the system. It is important in those circumstances where you have to take
 decision based on different version.
-The returned data aee similar to the example repoted below:
+The returned data are similar to the example repoted below:
 
 ```js
 {
@@ -230,8 +228,8 @@ The returned data aee similar to the example repoted below:
 }
 ```
 
-This is a synchronous method and return the version info or throw an Error to indicate that
-something was wrong in executing it.
+This is a synchronous method and returns the version info or throws an Error to indicate that
+something went wrong during its execution.
 
 #### Example - version
 
@@ -257,7 +255,7 @@ try {
 
 ### executeSync
 
-**executeSync(cmd)** method take the Ghostscript command parameters in input as a string and execute it in a synchronous way.
+**executeSync(cmd)** method takes the Ghostscript command parameters in input as a string and executes in a synchronous way.
 If something wrong happens in calling this method an Error with description and code error will be thrown.
 
 #### Example - executeSync
@@ -277,10 +275,8 @@ try {
 
 ### execute
 
-**execute(cmd, callback)** method take in input the Ghostscript command parameters as a string and an optional callbackand. The execution will be asynchronous so
-this ensure better performance especially in a web application enviroment, because the Node.Js event loop will not block.
-This method has optional callback function as input in that case a possible error will be handled by this function. If noone function will be provided the method
-return a Promise that will be resolved or rejected all as reported in the following example.
+**execute(cmd, callback)** method takes in input the Ghostscript command parameters as a string and an optional callback. The execution will be asynchronous so this ensure better performance especially in a web application enviroment, because it'll not block the Node.Js event loop.
+This method has an optional callback function as input, in that case, a possible error will be handled by this function. If noone function will be provided the method returns a Promise that will be resolved or rejected as reported in the following example.
 
 #### Example - execute
 
@@ -317,15 +313,13 @@ gs.execute(cmd)
 ### Error
 
 The error raised from **ghostscript4js** in all of its method is an instance of Error object that cointains a message that
-describe what happened and at the same time cointains the Ghostscript error code so you can inspect what ahhpened in a better
-way. At this link [Ghostscript error codes](https://ghostscript.com/doc/current/API.htm#return_codes) you can find all Ghostscript
-errors code.
+describes what happened and at the same time cointains the Ghostscript error code so you can inspect what happened in a better
+way. At this link [Ghostscript error codes](https://ghostscript.com/doc/current/API.htm#return_codes) you can find all Ghostscript errors code.
 
 ### Min and Max supported revision
 
-This module was builded based on Ghostscript C API that is compatible with some specifica versions. The module has two
-properties  **MIN_SUPPORTED_REVISION** and  **MAX_SUPPORTED_REVISION** which respectively indicate the maximum and minimum of supported
-Ghostscript's version.
+This module was built based on Ghostscript C API that is compatible with some specifics versions. The module has two
+properties  **MIN_SUPPORTED_REVISION** and **MAX_SUPPORTED_REVISION** which respectively indicate the minimum and maximum supported Ghostscript's version.
 
 #### Example - Min and Max supported revision
 
