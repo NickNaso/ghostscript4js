@@ -77,6 +77,8 @@ Before installing Ghostscript4JS you need to assure you have the following prere
 
 * **Ghostscript** for your Operating System.
 
+## At moment Ghostscript4JS is fully compatible with Ghostscript version 9.19 and 9.20
+
 ## Linux
 
 ### Debian systems
