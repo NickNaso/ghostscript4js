@@ -2,6 +2,8 @@
 
 ## 1.0.7 / 2017-03-03
 
+* Added compatibility with Ghostscript version
+
 * Fix issue [#13](https://github.com/NickNaso/ghostscript4js/issues/13).
 
 ## 1.0.5 / 2017-02-22
