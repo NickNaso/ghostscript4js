@@ -50,6 +50,7 @@
     "CHANGELOG.md",
     "binding.gyp",
     "index.js",
+    "binding.gyp",
     "lib/",
     "src/"
   ]
