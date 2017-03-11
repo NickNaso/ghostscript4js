@@ -1,7 +1,7 @@
 {
   "name": "ghostscript4js",
   "description": "Bindings for the Ghostscript C API to bring Ghostscript power to the Node.JS world.",
-  "version": "1.0.7",
+  "version": "1.0.11",
   "contributors": [
     {
       "name": "Nicola Del Gobbo",
@@ -22,8 +22,7 @@
   ],
   "license": "Apache-2.0",
   "scripts": {
-    "test": "node node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json",
-    "install": "node-gyp rebuild"
+    "test": "node node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json"
   },
   "engines": {
     "node": ">= 6.0.0"
@@ -44,10 +43,12 @@
   "devDependencies": {
     "jasmine": "^2.5.2"
   },
+  "main": "./index.js",
   "files": [
     "LICENSE",
     "README.md",
     "CHANGELOG.md",
+    "binding.gyp",
     "index.js",
     "lib/",
     "src/"
