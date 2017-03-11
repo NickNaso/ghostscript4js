@@ -2,7 +2,7 @@
 
 ## 1.0.11 / 2017-11-03
 
-* Fix issue [#13](https://github.com/NickNaso/ghostscript4js/issues/14).
+* Installation problem - Fix issue [#13](https://github.com/NickNaso/ghostscript4js/issues/14).
 
 ## 1.0.7 / 2017-03-03
 
