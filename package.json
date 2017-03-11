@@ -48,6 +48,7 @@
     "README.md",
     "CHANGELOG.md",
     "index.js",
+    "binding.gyp",
     "lib/",
     "src/"
   ]
