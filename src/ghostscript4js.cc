@@ -19,6 +19,9 @@
 
 #include "ghostscript4js.h"
 
+//TODO create new Singleton class that handle the request
+// count the works to do and if there are no work destroy the object
+
 /*class GhostscriptWorker : public AsyncWorker {
     public:
         GhostscriptWorker(Callback *callback, string RAWcmd) 
