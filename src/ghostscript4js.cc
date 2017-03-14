@@ -19,7 +19,7 @@
 
 #include "ghostscript4js.h"
 
-class GhostscriptWorker : public AsyncWorker {
+/*class GhostscriptWorker : public AsyncWorker {
     public:
         GhostscriptWorker(Callback *callback, string RAWcmd) 
             : AsyncWorker(callback), RAWcmd(RAWcmd), res(0) {}
@@ -76,7 +76,7 @@ class GhostscriptWorker : public AsyncWorker {
             string RAWcmd;
             int res;
             stringstream msg;
-};
+};*/
 
 NAN_METHOD(Version)
 {
@@ -102,13 +102,13 @@ NAN_METHOD(Execute)
     Callback *callback = new Callback(info[1].As<Function>());
     Local<String> JScmd = Local<String>::Cast(info[0]);
     string RAWcmd = *String::Utf8Value(JScmd);
-    AsyncQueueWorker(new GhostscriptWorker(callback, RAWcmd));    
+    //AsyncQueueWorker(new GhostscriptWorker(callback, RAWcmd));    
 }
 
 NAN_METHOD(ExecuteSync)
 {
     Nan::HandleScope();
-    if (info.Length() < 1) {
+    /*if (info.Length() < 1) {
         return Nan::ThrowError("Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
     }
     if (!info[0]->IsString()) {
@@ -150,7 +150,7 @@ NAN_METHOD(ExecuteSync)
         stringstream msg; 
         msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
         return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
-    }  
+    }*/  
 }
 
 //////////////////////////// INIT & CONFIG MODULE //////////////////////////////
