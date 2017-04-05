@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.13 / 2017-06-04
+## 1.0.19 / 2017-06-04
 
 * Invalid file path problem - Fix issue [#16](https://github.com/NickNaso/ghostscript4js/issues/16).
 
