@@ -151,12 +151,7 @@ NAN_METHOD(Execute)
 NAN_METHOD(ExecuteSync)
 {
     Nan::HandleScope();
-    //GhostscriptManager *sc1,*sc2;
-    //sc1 = GhostscriptManager::getInstance();
-    //sc1->method();
-    //sc2 = GhostscriptManager::getInstance();
-    //sc2->method();
-
+   
 
     if (info.Length() < 1) {
         return Nan::ThrowError("Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
