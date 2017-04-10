@@ -19,10 +19,50 @@
 
 #include "ghostscript4js.h"
 
-//TODO create new Singleton class that handle the request
-// count the works to do and if there are no work destroy the object
 
-/*class GhostscriptWorker : public AsyncWorker {
+class GhostscriptManager
+{
+private:
+    void *minst;
+    int workers;
+    std::mutex workers_mutex;   
+    static bool exists;
+    static GhostscriptManager *instance;
+    GhostscriptManager()
+    {
+        minst = NULL;
+        workers = 0;
+    }
+    void init();
+    void destroy();
+public:
+    static GhostscriptManager* getInstance();
+    ~GhostscriptManager()
+    {
+        exists = false;
+    };
+    void execute();
+};
+
+bool GhostscriptManager::exists = false;
+GhostscriptManager* GhostscriptManager::instance = NULL;
+GhostscriptManager* GhostscriptManager::getInstance()
+{
+    if(!exists)
+    {
+        instance = new GhostscriptManager();
+        exists = true;
+        return instance;
+    }
+    else
+    {
+        return instance;
+    }
+}
+
+
+
+class GhostscriptWorker : public AsyncWorker {
     public:
         GhostscriptWorker(Callback *callback, string RAWcmd) 
             : AsyncWorker(callback), RAWcmd(RAWcmd), res(0) {}
@@ -79,7 +119,7 @@
             string RAWcmd;
             int res;
             stringstream msg;
-};*/
+};
 
 NAN_METHOD(Version)
 {
@@ -105,13 +145,20 @@ NAN_METHOD(Execute)
     Callback *callback = new Callback(info[1].As<Function>());
     Local<String> JScmd = Local<String>::Cast(info[0]);
     string RAWcmd = *String::Utf8Value(JScmd);
-    //AsyncQueueWorker(new GhostscriptWorker(callback, RAWcmd));    
+    AsyncQueueWorker(new GhostscriptWorker(callback, RAWcmd));    
 }
 
 NAN_METHOD(ExecuteSync)
 {
     Nan::HandleScope();
-    /*if (info.Length() < 1) {
+    //GhostscriptManager *sc1,*sc2;
+    //sc1 = GhostscriptManager::getInstance();
+    //sc1->method();
+    //sc2 = GhostscriptManager::getInstance();
+    //sc2->method();
+
+
+    if (info.Length() < 1) {
         return Nan::ThrowError("Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
     }
     if (!info[0]->IsString()) {
@@ -153,7 +200,7 @@ NAN_METHOD(ExecuteSync)
         stringstream msg; 
         msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
         return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
-    }*/  
+    }  
 }
 
 //////////////////////////// INIT & CONFIG MODULE //////////////////////////////
