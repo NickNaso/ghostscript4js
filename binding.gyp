@@ -48,6 +48,11 @@
               }
             }]
           ],
+          "msvs_settings": {
+            "VCCLCompilerTool": {
+              "ExceptionHandling": 1
+            }
+          },
           "libraries": ["<(module_root_dir)/build/Release/<(GS4JS_LIB)"],
           "copies": [
             {

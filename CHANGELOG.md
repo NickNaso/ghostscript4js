@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1 / 2017-18-04
+
+* Warning on Microsoft compiler - Fix issue [#18](https://github.com/NickNaso/ghostscript4js/issues/18)
+
+* Removed unused file **g4js-env-home.js**
+
 ## 2.0.0 / 2017-18-04
 
 * **`ghostscript4js`** support for Ghostscript **9.21**. For more info see the [changelog](https://ghostscript.com/doc/9.21/News.htm).  
