@@ -31,9 +31,10 @@
 
 #include <sstream>
 #include <string>
+#include <mutex>
+#include <exception>
 
 #include <node.h>
-#include <node_buffer.h>
 #include <v8.h>
 #include <nan.h>
 

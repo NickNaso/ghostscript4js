@@ -1,12 +1,24 @@
 # Changelog
 
+## 2.0.0 / 2017-18-04
+
+* **`ghostscript4js`** support for Ghostscript **9.21**. For more info see the [changelog](https://ghostscript.com/doc/9.21/News.htm).  
+
+* Fix typo and other little errors in documentation.
+
+* Problem calling execute method multiple time consecutively - Fix issue [#15](https://github.com/NickNaso/ghostscript4js/issues/15).
+
+## 1.0.19 / 2017-06-04
+
+* Invalid file path problem - Fix issue [#16](https://github.com/NickNaso/ghostscript4js/issues/16).
+
 ## 1.0.11 / 2017-11-03
 
 * Installation problem - Fix issue [#13](https://github.com/NickNaso/ghostscript4js/issues/14).
 
 ## 1.0.7 / 2017-03-03
 
-* Added compatibility with Ghostscript version
+* Added compatibility with Ghostscript version.
 
 * Fix issue [#13](https://github.com/NickNaso/ghostscript4js/issues/13).
 

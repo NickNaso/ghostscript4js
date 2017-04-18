@@ -19,13 +19,13 @@
 
 #include "ghostscript4js.h"
 
-
+// Lifeclycle management for the Ghostscript instance
 class GhostscriptManager
 {
-private:
+  private:
     void *minst;
     int workers;
-    std::mutex workers_mutex;   
+    mutex gs;
     static bool exists;
     static GhostscriptManager *instance;
     GhostscriptManager()
@@ -33,22 +33,28 @@ private:
         minst = NULL;
         workers = 0;
     }
-    void init();
-    void destroy();
-public:
-    static GhostscriptManager* getInstance();
+    void Init();
+    void Destroy();
+    void Exit();
+    void IncreaseWorkers();
+    void DecreaseWorkers();
+
+  public:
+    static GhostscriptManager *GetInstance();
     ~GhostscriptManager()
     {
         exists = false;
     };
-    void execute();
+    void Execute(int gsargc, char *gsargv[]);
 };
 
 bool GhostscriptManager::exists = false;
-GhostscriptManager* GhostscriptManager::instance = NULL;
-GhostscriptManager* GhostscriptManager::getInstance()
+GhostscriptManager *GhostscriptManager::instance = NULL;
+// Static method that create or simple return the instance of the GhostscriptManager
+// following the singleton design pattern
+GhostscriptManager *GhostscriptManager::GetInstance()
 {
-    if(!exists)
+    if (!exists)
     {
         instance = new GhostscriptManager();
         exists = true;
@@ -60,81 +66,155 @@ GhostscriptManager* GhostscriptManager::getInstance()
     }
 }
 
+// Init is an implementation of gsapi_new_instance.
+// It returns a global static instance of Ghostscript.
+// i.e. Do not call init more than once, otherwise an error will be returned.
+void GhostscriptManager::Init()
+{
+    int code = 0;
+    code = gsapi_new_instance(&minst, NULL);
+    if (code < 0)
+    {
+        throw "Sorry error happened creating Ghostscript instance. Error code: " + to_string(code);
+    }
+    gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
+    code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
+    if (code < 0)
+    {
+        throw "Sorry error happened in setting the encoding for Ghostscript interpreter. Error code: " + to_string(code);
+    }
+}
 
+// Execute is an implementation of gsapi_init_with_args.
+// It initialises the Ghostscript interpreter given a set of arguments.
+void GhostscriptManager::Execute(int gsargc, char *gsargv[])
+{
+    lock_guard<mutex> lk(gs);
+    if (workers == 0)
+    {
+        Init();
+    }
+    IncreaseWorkers();
+    int code = 0;
+    code = gsapi_init_with_args(minst, gsargc, gsargv);
+    if (code < 0 && code != gs_error_Quit)
+    {
+        throw "Sorry error happened executing Ghostscript command. Error code: " + to_string(code);
+    }
+    DecreaseWorkers();
+    if (workers == 0)
+    {
+        Exit();
+        Destroy();
+    }
+}
 
-class GhostscriptWorker : public AsyncWorker {
-    public:
-        GhostscriptWorker(Callback *callback, string RAWcmd) 
-            : AsyncWorker(callback), RAWcmd(RAWcmd), res(0) {}
-        ~GhostscriptWorker() {} 
+// Exit is an implementation of gsapi_exit.
+// It exits the Ghostscript interpreter.
+// It must be called if init has been called, and just before destroy.
+void GhostscriptManager::Exit()
+{
+    int code = 0;
+    code = gsapi_exit(minst);
+    if (code < 0 && code != gs_error_Quit)
+    {
+        throw "Sorry error happened during the exit from the Ghostscript interpreter. Error code: " + to_string(code);
+    }
+}
 
-        void Execute() {
-            res = 0;
-            vector<string> explodedCmd;
-            istringstream iss(RAWcmd);
-            for(string RAWcmd; iss >> RAWcmd;)
-                explodedCmd.push_back(RAWcmd);
-            void *minst;
-            int code, exit_code;
-            int gsargc = static_cast<int>(explodedCmd.size());
-            char ** gsargv = new char*[gsargc];
-            for(int i = 0; i < gsargc; i++) {
-                gsargv[i] = (char*)explodedCmd[i].c_str();
-            }
-            code = gsapi_new_instance(&minst, NULL);
-            if (code < 0) {
-                msg << "Sorry error happened creating Ghostscript instance. Error code: " << code;
-                res = 1;
-            } else {
-                gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
-                code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
-                if (code == 0)
-                    code = gsapi_init_with_args(minst, gsargc, gsargv); 
-                exit_code = gsapi_exit(minst);
-                if ((code == 0) || (code == gs_error_Quit))
-                    code = exit_code;
-                gsapi_delete_instance(minst);
-                if ((code == 0) || (code == gs_error_Quit)) {
-                    res = 0;
-                } else {
-                    msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
-                    res = 1;
-                }        
-            }
-            delete[] gsargv;     
+// Destroy is an implementation of gsapi_delete_instance.
+// It destroys a global static instance of Ghostscript.
+// It should be called only after exit has been called if init has been called.
+void GhostscriptManager::Destroy()
+{
+    gsapi_delete_instance(minst);
+}
+
+// IncreaseWorkers add 1 worker to the total workers on the system.
+void GhostscriptManager::IncreaseWorkers()
+{
+    workers += 1;
+}
+
+// DecreaseWorkers substract 1 worker to the total workers on the system.
+void GhostscriptManager::DecreaseWorkers()
+{
+    workers -= 1;
+}
+
+class GhostscriptWorker : public AsyncWorker
+{
+  public:
+    GhostscriptWorker(Callback *callback, string RAWcmd)
+        : AsyncWorker(callback), RAWcmd(RAWcmd), res(0) {}
+    ~GhostscriptWorker() {}
+
+    void Execute()
+    {
+        res = 0;
+        vector<string> explodedCmd;
+        istringstream iss(RAWcmd);
+        for (string RAWcmd; iss >> RAWcmd;)
+            explodedCmd.push_back(RAWcmd);
+        int gsargc = static_cast<int>(explodedCmd.size());
+        char **gsargv = new char *[gsargc];
+        for (int i = 0; i < gsargc; i++)
+        {
+            gsargv[i] = (char *)explodedCmd[i].c_str();
         }
+        try
+        {
+            GhostscriptManager *gm = GhostscriptManager::GetInstance();
+            gm->Execute(gsargc, gsargv);
+            delete[] gsargv;
+            res = 0;
+        }
+        catch (exception &e)
+        {
+            delete[] gsargv;
+            msg << e.what();
+            res = 1;
+        }
+    }
 
-        void HandleOKCallback() {
-            Nan::HandleScope();
-            Local<Value> argv[1];
-            if (res == 0) {
-                argv[0] = Null();
-            } else {
-                argv[0] = Error(Nan::New<String>(msg.str()).ToLocalChecked());
-            }
-            callback->Call(1, argv);
-        } 
+    void HandleOKCallback()
+    {
+        Nan::HandleScope();
+        Local<Value> argv[1];
+        if (res == 0)
+        {
+            argv[0] = Null();
+        }
+        else
+        {
+            argv[0] = Error(Nan::New<String>(msg.str()).ToLocalChecked());
+        }
+        callback->Call(1, argv);
+    }
 
-        private:
-            string RAWcmd;
-            int res;
-            stringstream msg;
+  private:
+    string RAWcmd;
+    int res;
+    stringstream msg;
 };
 
 NAN_METHOD(Version)
 {
     Nan::HandleScope();
-    Local<Object> obj  = Nan::New<Object>();
+    Local<Object> obj = Nan::New<Object>();
     gsapi_revision_t r;
     int res = gsapi_revision(&r, sizeof(r));
-    if ( res == 0) {
+    if (res == 0)
+    {
         obj->Set(Nan::New<String>("product").ToLocalChecked(), Nan::New<String>(r.product).ToLocalChecked());
         obj->Set(Nan::New<String>("copyright").ToLocalChecked(), Nan::New<String>(r.copyright).ToLocalChecked());
         obj->Set(Nan::New<String>("revision").ToLocalChecked(), Nan::New<Number>(r.revision));
         obj->Set(Nan::New<String>("revisiondate").ToLocalChecked(), Nan::New<Number>(r.revisiondate));
-    } else {
-        std::stringstream msg; 
-        msg << "Sorry error happened retrieving Ghostscript version info. Error code: " << res; 
+    }
+    else
+    {
+        std::stringstream msg;
+        msg << "Sorry error happened retrieving Ghostscript version info. Error code: " << res;
         return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
     }
     info.GetReturnValue().Set(obj);
@@ -144,58 +224,44 @@ NAN_METHOD(Execute)
 {
     Callback *callback = new Callback(info[1].As<Function>());
     Local<String> JScmd = Local<String>::Cast(info[0]);
-    string RAWcmd = *String::Utf8Value(JScmd);
-    AsyncQueueWorker(new GhostscriptWorker(callback, RAWcmd));    
+    AsyncQueueWorker(new GhostscriptWorker(callback, *String::Utf8Value(JScmd)));
 }
 
 NAN_METHOD(ExecuteSync)
 {
     Nan::HandleScope();
-   
 
-    if (info.Length() < 1) {
+    if (info.Length() < 1)
+    {
         return Nan::ThrowError("Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
     }
-    if (!info[0]->IsString()) {
+    if (!info[0]->IsString())
+    {
         return Nan::ThrowError("Sorry executeSync() method's argument should be a string.");
     }
     Local<String> JScmd = Local<String>::Cast(info[0]);
-    string RAWcmd = *String::Utf8Value(JScmd);
+    string RAWcmd = *String::Utf8Value(JScmd);  
     vector<string> explodedCmd;
     istringstream iss(RAWcmd);
-    for(string RAWcmd; iss >> RAWcmd;)
+    for (string RAWcmd; iss >> RAWcmd;)
         explodedCmd.push_back(RAWcmd);
-    void *minst;
-    int code, exit_code;
-    int gsargc = static_cast<int>(explodedCmd.size());    
-    char ** gsargv = new char*[gsargc];
-    for(int i = 0; i < gsargc; i++) {
-        gsargv[i] = (char*)explodedCmd[i].c_str();
+    int gsargc = static_cast<int>(explodedCmd.size());
+    char **gsargv = new char *[gsargc];
+    for (int i = 0; i < gsargc; i++)
+    {
+        gsargv[i] = (char *)explodedCmd[i].c_str();
     }
-    code = gsapi_new_instance(&minst, NULL);
-    if (code < 0) {
+    try
+    {
+        GhostscriptManager *gm = GhostscriptManager::GetInstance();
+        gm->Execute(gsargc, gsargv);
         delete[] gsargv;
-        stringstream msg; 
-        msg << "Sorry error happened creating Ghostscript instance. Error code: " << code;
-        return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
-    }    
-    gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
-    code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
-    if (code == 0)
-        code = gsapi_init_with_args(minst, gsargc, gsargv);
-    exit_code = gsapi_exit(minst);
-    if ((code == 0) || (code == gs_error_Quit))
-	code = exit_code;
-    gsapi_delete_instance(minst);
-    if ((code == 0) || (code == gs_error_Quit)) {
+    }
+    catch (exception &e)
+    {
         delete[] gsargv;
-        return;
-    } else {
-        delete[] gsargv;
-        stringstream msg; 
-        msg << "Sorry error happened executing Ghostscript command. Error code: " << code;
-        return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
-    }  
+        return Nan::ThrowError(Nan::New<String>(e.what()).ToLocalChecked());
+    }
 }
 
 //////////////////////////// INIT & CONFIG MODULE //////////////////////////////
@@ -209,7 +275,7 @@ void Init(Local<Object> exports)
                  Nan::New<FunctionTemplate>(Execute)->GetFunction());
 
     exports->Set(Nan::New("executeSync").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(ExecuteSync)->GetFunction());                     
+                 Nan::New<FunctionTemplate>(ExecuteSync)->GetFunction());
 }
 
 NODE_MODULE(ghostscript4js, Init)
