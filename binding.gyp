@@ -3,6 +3,8 @@
     {
       "target_name": "ghostscript4js",
       "sources": ["src/ghostscript4js.cc"],
+      'cflags!': [ '-fno-exceptions' ],
+      'cflags_cc!': [ '-fno-exceptions' ],
       "include_dirs": [
         "<!(node -e \"require('nan')\")"
       ],
@@ -55,6 +57,9 @@
           ]
         }],
         ['OS=="mac"', {
+          'xcode_settings': {
+            'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+          },
           'variables': {
             "GS4JS_HOME%": "<!(echo $GS4JS_HOME)",
             "GS4JS_LIB%": "libgs.dylib",

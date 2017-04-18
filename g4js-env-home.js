@@ -17,36 +17,11 @@
  * Mauro Doganieri <mauro.doganieri@gmail.com>
  ******************************************************************************/
 
-#ifndef GHOSTSCRIPT4JS_H
-#define GHOSTSCRIPT4JS_H
+'use strict'
 
-#if defined(_WIN32) && !defined(_Windows)
-#define _Windows
-#endif
-#ifdef _Windows
-//#define _WINSOCKAPI_ 
-//#include <windows.h>
-#define GSDLLEXPORT __declspec(dllimport)
-#endif
-
-#include <sstream>
-#include <string>
-#include <mutex>
-#include <exception>
-
-#include <node.h>
-#include <v8.h>
-#include <nan.h>
-
-#include "gdevdsp.h"
-#include "gserrors.h"
-#include "ierrors.h"
-#include "iapi.h"
-
-using namespace Nan;
-using namespace v8;
-using namespace std;
-
-#include "ghostscript.c"
-
-#endif //GHOSTSCRIPT4JS_H
+let GS4JS_HOME = ""
+if (process.env.GS4JS_HOME) {
+    GS4JS_HOME = process.env.GS4JS_HOME
+    GS4JS_HOME = GS4JS_HOME.split("\\").join("/")
+}
+process.stdout.write(GS4JS_HOME)
