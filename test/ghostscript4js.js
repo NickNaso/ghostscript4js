@@ -33,13 +33,6 @@ const pngAsync = 'node-love-ghostscript-async.png'
 const cmdSync = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
 const cmdAsync = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngAsync} -sDEVICE=pngalpha -r144 ${pdf}`
 
-const pdf = 'node-love-ghostscript.pdf'
-const pngSync = 'node-love-ghostscript-sync.png'
-const pngAsync = 'node-love-ghostscript-async.png'
-const cmdSync = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
-const cmdAsync = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngAsync} -sDEVICE=pngalpha -r144 ${pdf}`
-
-
 console.log('Start cleanup ...')
 try {
   fs.unlinkSync(pngSync)
