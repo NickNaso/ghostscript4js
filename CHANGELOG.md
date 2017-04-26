@@ -1,5 +1,7 @@
 # Changelog
 
+test
+
 ## 2.0.1 / 2017-18-04
 
 * Warning on Microsoft compiler - Fix issue [#18](https://github.com/NickNaso/ghostscript4js/issues/18)
