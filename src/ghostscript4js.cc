@@ -266,15 +266,15 @@ NAN_METHOD(ExecuteSync)
 
 //////////////////////////// INIT & CONFIG MODULE //////////////////////////////
 
-void Init(Local<Object> exports)
+NAN_MODULE_INIT(Init)
 {
-    exports->Set(Nan::New("version").ToLocalChecked(),
+    Nan::Set(target, Nan::New<String>("version").ToLocalChecked(),
                  Nan::New<FunctionTemplate>(Version)->GetFunction());
 
-    exports->Set(Nan::New("execute").ToLocalChecked(),
+    Nan::Set(target, Nan::New<String>("execute").ToLocalChecked(),
                  Nan::New<FunctionTemplate>(Execute)->GetFunction());
 
-    exports->Set(Nan::New("executeSync").ToLocalChecked(),
+    Nan::Set(target, Nan::New<String>("executeSync").ToLocalChecked(),
                  Nan::New<FunctionTemplate>(ExecuteSync)->GetFunction());
 }
 
