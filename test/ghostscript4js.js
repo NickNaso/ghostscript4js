@@ -75,7 +75,7 @@ describe('Test ghostscript4js', function () {
 
   /*it('Should execute Ghostscript command to convert from PDF to PDF/A synchronously', function () {
     try {
-      gs.executeSync('-dPDFA -dBATCH -dNOPAUSE -sProcessColorModel=DeviceCMYK -sDEVICE=pdfwrite -sPDFACompatibilityPolicy=1 -sOutputFile=my-pdfa-sync.pdf node-love-ghostscript.pdf')
+      gs.executeSync('-dPDFA -dBATCH -dNOPAUSE -dUseCIEColor -sProcessColorModel=DeviceCMYK -sDEVICE=pdfwrite -sPDFACompatibilityPolicy=1 -sOutputFile=my-pdfa-sync.pdf node-love-ghostscript.pdf')
     } catch (err) {
       // Handle error
       throw err
