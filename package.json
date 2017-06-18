@@ -45,7 +45,7 @@
   },
   "main": "./index.js",
   "files": [
-   "LICENSE",
+    "LICENSE",
     "README.md",
     "CHANGELOG.md",
     "binding.gyp",

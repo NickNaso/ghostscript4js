@@ -72,4 +72,24 @@ describe('Test ghostscript4js', function () {
     })   
   })
 
+
+  /*it('Should execute Ghostscript command to convert from PDF to PDF/A synchronously', function () {
+    try {
+      gs.executeSync('-dPDFA -dBATCH -dNOPAUSE -sProcessColorModel=DeviceCMYK -sDEVICE=pdfwrite -sPDFACompatibilityPolicy=1 -sOutputFile=my-pdfa-sync.pdf node-love-ghostscript.pdf')
+    } catch (err) {
+      // Handle error
+      throw err
+    }
+  })
+
+  it('Should execute Ghostscript command to convert from PDF to PDF/A synchronously', function (done) {
+    gs.execute('-dPDFA -dBATCH -dNOPAUSE -sProcessColorModel=DeviceCMYK -sDEVICE=pdfwrite -sPDFACompatibilityPolicy=1 -sOutputFile=my-pdfa-async.pdf node-love-ghostscript.pdf')
+    .then(() => {
+      done()
+    })
+    .catch((err) => {
+      done()
+    })   
+  })*/
+
 })
