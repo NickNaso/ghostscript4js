@@ -1,7 +1,7 @@
 {
   "name": "ghostscript4js",
   "description": "Bindings for the Ghostscript C API to the Node.JS world.",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "contributors": [
     {
       "name": "Nicola Del Gobbo",
@@ -38,10 +38,10 @@
   "homepage": "http://www.nacios.it/",
   "dependencies": {
     "bindings": "^1.2.1",
-    "nan": "^2.4.0"
+    "nan": "^2.6.2"
   },
   "devDependencies": {
-    "jasmine": "^2.5.2"
+    "jasmine": "^2.6.0"
   },
   "main": "./index.js",
   "files": [
