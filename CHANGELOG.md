@@ -2,7 +2,7 @@
 
 ## 2.0.3 / 2017-30-06
 
-* Specify --c++11 and --libc++ cplusplus flags in node-gyp settings - PR[#22](https://github.com/NickNaso/ghostscript4js/pull/22)
+* Specify --c++11 and --libc++ cplusplus flags in node-gyp settings - PR [#22](https://github.com/NickNaso/ghostscript4js/pull/22)
 
 * Removed V8 API in the initialization code for the add-ons
 ## 2.0.1 / 2017-18-04
