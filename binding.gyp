@@ -12,10 +12,13 @@
         ['OS=="linux"', {
           'variables': {
             "GS4JS_HOME%": "<!(echo $GS4JS_HOME)",
-            "GS4JS_LIB%": "libgs.so",
+            "GS4JS_LIB%": "<!(echo $GS4JS_LIB)",
             "conditions": [
               ['"<!(echo $GS4JS_HOME)" == ""', {
                 "GS4JS_HOME%": "/usr/lib/x86_64-linux-gnu"
+              }],
+              ['"<!(echo $GS4JS_LIB)" == ""', {
+                "GS4JS_LIB%": "libgs.so"
               }]
             ]
           },
@@ -26,11 +29,17 @@
             ['target_arch=="x64"', {
               "variables": {
                 "GS4JS_HOME%": "<!(node gs4js-env-home.js)",  
-                "GS4JS_LIB%": "gsdll64.lib",
-                "GS4JS_DLL%": "gsdll64.dll",
+                "GS4JS_LIB%": "<!(node gs4js-env-lib.js)",
+                "GS4JS_DLL%": "<!(node gs4js-env-dll.js)",
                 "conditions": [
                   ['"<!(node gs4js-env-home.js)" == ""', {
                     "GS4JS_HOME%": "C:/gs/bin"
+                  }],
+                  ['"<!(node gs4js-env-lib.js)" == ""', {
+                    "GS4JS_LIB%": "gsdll64.lib"
+                  }],
+                  ['"<!(node gs4js-env-dll.js)" == ""', {
+                    "GS4JS_DLL%": "gsdll64.dll"
                   }]
                 ]
               }
@@ -38,11 +47,17 @@
             {
               "variables": { 
                 "GS4JS_HOME%": "<!(node gs4js-env-home.js)",  
-                "GS4JS_LIB%": "gsdll32.lib",
-                "GS4JS_DLL%": "gsdll32.dll",
+                "GS4JS_LIB%": "<!(node gs4js-env-lib.js)",
+                "GS4JS_DLL%": "<!(node gs4js-env-dll.js)",
                 "conditions": [
                   ['"<!(node gs4js-env-home.js)" == ""', {
                     "GS4JS_HOME%": "C:/gs/bin"
+                  }],
+                  ['"<!(node gs4js-env-lib.js)" == ""', {
+                    "GS4JS_LIB%": "gsdll32.lib"
+                  }],
+                  ['"<!(node gs4js-env-dll.js)" == ""', {
+                    "GS4JS_DLL%": "gsdll32.dll"
                   }]
                 ]
               }
@@ -69,10 +84,13 @@
           },
           'variables': {
             "GS4JS_HOME%": "<!(echo $GS4JS_HOME)",
-            "GS4JS_LIB%": "libgs.dylib",
+            "GS4JS_LIB%": "<!(echo $GS4JS_LIB)",
             "conditions": [
               ['"<!(echo $GS4JS_HOME)" == ""', {
                 "GS4JS_HOME%": "/usr/local/lib"
+              }],
+              ['"<!(echo $GS4JS_LIB)" == ""', {
+                "GS4JS_LIB%": "libgs.dylib"
               }]
             ]
           },
