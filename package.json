@@ -51,6 +51,8 @@
     "binding.gyp",
     "index.js",
     "gs4js-env-home.js",
+    "gs4js-env-lib.js",
+    "gs4js-env-dll.js",
     "binding.gyp",
     "lib/",
     "src/"
