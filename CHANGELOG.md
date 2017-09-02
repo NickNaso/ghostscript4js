@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.5 / 2017-01-09
+
+* GS4JS_LIB variable isn't used - Fix issue [#23](https://github.com/NickNaso/ghostscript4js/issues/23)
+
 ## 2.0.3 / 2017-30-06
 
 * Specify --c++11 and --libc++ cplusplus flags in node-gyp settings - PR [#22](https://github.com/NickNaso/ghostscript4js/pull/22)
