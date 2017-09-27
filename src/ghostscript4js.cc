@@ -225,6 +225,7 @@ NAN_METHOD(Execute)
     Callback *callback = new Callback(info[1].As<Function>());
     Local<String> JScmd = Local<String>::Cast(info[0]);
     AsyncQueueWorker(new GhostscriptWorker(callback, *String::Utf8Value(JScmd)));
+    info.GetReturnValue().SetUndefined();
 }
 
 NAN_METHOD(ExecuteSync)
