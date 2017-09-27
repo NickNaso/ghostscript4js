@@ -1,7 +1,7 @@
 {
   "name": "ghostscript4js",
   "description": "Bindings for the Ghostscript C API to the Node.JS world.",
-  "version": "2.0.5",
+  "version": "2.0.7",
   "contributors": [
     {
       "name": "Nicola Del Gobbo",
@@ -51,6 +51,8 @@
     "binding.gyp",
     "index.js",
     "gs4js-env-home.js",
+    "gs4js-env-lib.js",
+    "gs4js-env-dll.js",
     "binding.gyp",
     "lib/",
     "src/"

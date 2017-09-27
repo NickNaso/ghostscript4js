@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.7 / 2017-02-09
+
+* Issue with the new update ghostscript4js@2.0.5 - Fix issue [#24](https://github.com/NickNaso/ghostscript4js/issues/24)
+
 ## 2.0.5 / 2017-01-09
 
 * GS4JS_LIB variable isn't used - Fix issue [#23](https://github.com/NickNaso/ghostscript4js/issues/23)
@@ -9,6 +13,7 @@
 * Specify --c++11 and --libc++ cplusplus flags in node-gyp settings - PR [#22](https://github.com/NickNaso/ghostscript4js/pull/22)
 
 * Removed V8 API in the initialization code for the add-ons
+
 ## 2.0.1 / 2017-18-04
 
 * Warning on Microsoft compiler - Fix issue [#18](https://github.com/NickNaso/ghostscript4js/issues/18)
