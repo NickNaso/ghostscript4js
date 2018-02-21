@@ -28,15 +28,24 @@ const fs = require('fs')
 process.chdir(__dirname) 
 
 const pdf = 'node-love-ghostscript.pdf'
+const ps = 'node-love-ghostscript.ps'
 const pngSync = 'node-love-ghostscript-sync.png'
 const pngAsync = 'node-love-ghostscript-async.png'
-const cmdSync = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
-const cmdAsync = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngAsync} -sDEVICE=pngalpha -r144 ${pdf}`
+const pdfSync = 'node-love-ghostscript-sync.pdf'
+const pdfAsync = 'node-love-ghostscript-async.pdf'
+
+const cmdSyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
+const cmdAsyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngAsync} -sDEVICE=pngalpha -r144 ${pdf}`
+
+const cmdSyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfSync} -f ${ps}`
+const cmdAsyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfAsync} -f ${ps}`
 
 console.log('Start cleanup ...')
 try {
   fs.unlinkSync(pngSync)
   fs.unlinkSync(pngAsync)
+  fs.unlinkSync(pdfSync)
+  fs.unlinkSync(pdfAsync)
   console.log('Cleanup competed')
 } catch (err) {
   console.log('Nothing to clean');
@@ -55,7 +64,7 @@ describe('Test ghostscript4js', function () {
 
   it('Should execute Ghostscript command synchronous', function () {
     try {
-      gs.executeSync(cmdSync)
+      gs.executeSync(cmdSyncPng)
     } catch (err) {
       // Handle error
       throw err
@@ -63,7 +72,7 @@ describe('Test ghostscript4js', function () {
   })
 
   it('Should execute Ghostscript command asynchronous', function (done) {
-    gs.execute(cmdAsync)
+    gs.execute(cmdAsyncPng)
     .then(() => {
       done()
     })
@@ -72,6 +81,24 @@ describe('Test ghostscript4js', function () {
     })   
   })
 
+  it('Should execute Ghostscript command synchronous', function () {
+    try {
+      gs.executeSync(cmdSyncPdf)
+    } catch (err) {
+      // Handle error
+      throw err
+    }
+  })
+
+  it('Should execute Ghostscript command asynchronous', function (done) {
+    gs.execute(cmdAsyncPdf)
+    .then(() => {
+      done()
+    })
+    .catch((err) => {
+      done()
+    })   
+  })
 
   /*it('Should execute Ghostscript command to convert from PDF to PDF/A synchronously', function () {
     try {
