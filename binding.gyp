@@ -6,7 +6,10 @@
       'cflags!': [ '-fno-exceptions' ],
       'cflags_cc!': [ '-fno-exceptions' ],
       "include_dirs": [
-        "<!(node -e \"require('nan')\")"
+        "<!@(node -p \"require('node-addon-api').include\")"
+      ],
+      'dependencies': [
+        "<!(node -p \"require('node-addon-api').gyp\")"
       ],
       "conditions": [
         ['OS=="linux"', {
@@ -80,7 +83,8 @@
           'xcode_settings': {
             'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
-            'CLANG_CXX_LIBRARY': 'libc++'
+            'CLANG_CXX_LIBRARY': 'libc++',
+            'MACOSX_DEPLOYMENT_TARGET': '10.7'
           },
           'variables': {
             "GS4JS_HOME%": "<!(echo $GS4JS_HOME)",
