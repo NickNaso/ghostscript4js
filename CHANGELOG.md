@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.11-n-api / 2018-03-22
+
+* Empty output with when using pdfwrite - Fix issue [#30](https://github.com/NickNaso/ghostscript4js/issues/30)
+* N-API porting of ghostscript4js - Fix issue [#29](https://github.com/NickNaso/ghostscript4js/issues/29)
+* Ghostscript 9.22 - Fix issue [#27](https://github.com/NickNaso/ghostscript4js/issues/27)
+
 ## 2.0.7 / 2017-02-09
 
 * Issue with the new update ghostscript4js@2.0.5 - Fix issue [#24](https://github.com/NickNaso/ghostscript4js/issues/24)
