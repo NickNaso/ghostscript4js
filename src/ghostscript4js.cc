@@ -246,20 +246,19 @@ Napi::Value Version(const Napi::CallbackInfo& info) {
     info.GetReturnValue().SetUndefined();
 }*/
 
-/*Napi::Value ExecuteSync(const Napi::CallbackInfo& info)
+void ExecuteSync(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
 
     if (info.Length() < 1)
     {
-        throw Napi::Error("Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
+        throw Napi::Error::New(env, "Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
     }
-    if (!info[0]->IsString())
+    if (!info[0].IsString())
     {
-        throw Napi::Error("Sorry executeSync() method's argument should be a string.");
+        throw Napi::Error::New(env, "Sorry executeSync() method's argument should be a string.");
     }
-    Local<String> JScmd = Local<String>::Cast(info[0]);
-    string RAWcmd = *String::Utf8Value(JScmd);  
+    string RAWcmd = info[0].As<Napi::String>().Utf8Value(); 
     vector<string> explodedCmd;
     istringstream iss(RAWcmd);
     for (string RAWcmd; iss >> RAWcmd;)
@@ -279,16 +278,16 @@ Napi::Value Version(const Napi::CallbackInfo& info) {
     catch (exception &e)
     {
         delete[] gsargv;
-        return Nan::ThrowError(Nan::New<String>(e.what()).ToLocalChecked());
+        throw Napi::Error::New(env, e.what());
     }
-}*/
+}
 
 //////////////////////////// INIT & CONFIG MODULE //////////////////////////////
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "version"), Napi::Function::New(env, Version));
     //exports.Set(Napi::String::New(env, "execute"), Napi::Function::New(env, Execute));
-    //exports.Set(Napi::String::New(env, "executeSync"), Napi::Function::New(env, ExecuteSync));
+    exports.Set(Napi::String::New(env, "executeSync"), Napi::Function::New(env, ExecuteSync));
     return exports;
 }
 
