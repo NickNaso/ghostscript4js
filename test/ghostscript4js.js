@@ -57,7 +57,7 @@ describe('Test ghostscript4js', function () {
       expect(gs.version).not.toThrow()
       const version = gs.version()
       expect(version.product).toContain('GPL Ghostscript')
-      expect(version.copyright).toContain('Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.')
+      expect(version.copyright).toContain('Copyright (C) 2017 Artifex Software, Inc.  All rights reserved.')
       expect(version.product).not.toBeLessThan(gs.MIN_SUPPORTED_REVISION)
       expect(version.product).not.toBeLessThan(20160323)
   })

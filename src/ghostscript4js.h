@@ -34,17 +34,14 @@
 #include <mutex>
 #include <exception>
 
-#include <node.h>
-#include <v8.h>
-#include <nan.h>
+#include <napi.h>
 
 #include "gdevdsp.h"
 #include "gserrors.h"
 #include "ierrors.h"
 #include "iapi.h"
 
-using namespace Nan;
-using namespace v8;
+//using namespace Napi;
 using namespace std;
 
 #include "ghostscript.c"

@@ -142,16 +142,15 @@ void GhostscriptManager::DecreaseWorkers()
     workers -= 1;
 }
 
-class GhostscriptWorker : public AsyncWorker
+class GhostscriptWorker : public Napi::AsyncWorker
 {
   public:
-    GhostscriptWorker(Callback *callback, string RAWcmd)
-        : AsyncWorker(callback), RAWcmd(RAWcmd), res(0) {}
+    GhostscriptWorker(Napi::Function& callback, string RAWcmd)
+        : Napi::AsyncWorker(callback), RAWcmd(RAWcmd) {}
     ~GhostscriptWorker() {}
 
     void Execute()
     {
-        res = 0;
         vector<string> explodedCmd;
         istringstream iss(RAWcmd);
         for (string RAWcmd; iss >> RAWcmd;)
@@ -167,81 +166,63 @@ class GhostscriptWorker : public AsyncWorker
             GhostscriptManager *gm = GhostscriptManager::GetInstance();
             gm->Execute(gsargc, gsargv);
             delete[] gsargv;
-            res = 0;
+        
         }
         catch (exception &e)
         {
             delete[] gsargv;
-            msg << e.what();
-            res = 1;
+            SetError(Napi::String::New(Env(), e.what()));
         }
     }
 
-    void HandleOKCallback()
+    void OnOk()
     {
-        Nan::HandleScope();
-        Local<Value> argv[1];
-        if (res == 0)
-        {
-            argv[0] = Null();
-        }
-        else
-        {
-            argv[0] = Error(Nan::New<String>(msg.str()).ToLocalChecked());
-        }
-        callback->Call(1, argv);
+        Napi::HandleScope scope(Env());
+        Callback().Call({Env().Null()});   
     }
 
   private:
     string RAWcmd;
-    int res;
-    stringstream msg;
 };
 
-NAN_METHOD(Version)
-{
-    Nan::HandleScope();
-    Local<Object> obj = Nan::New<Object>();
+Napi::Value Version(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    Napi::Object obj = Napi::Object::New(env);
     gsapi_revision_t r;
     int res = gsapi_revision(&r, sizeof(r));
-    if (res == 0)
-    {
-        obj->Set(Nan::New<String>("product").ToLocalChecked(), Nan::New<String>(r.product).ToLocalChecked());
-        obj->Set(Nan::New<String>("copyright").ToLocalChecked(), Nan::New<String>(r.copyright).ToLocalChecked());
-        obj->Set(Nan::New<String>("revision").ToLocalChecked(), Nan::New<Number>(r.revision));
-        obj->Set(Nan::New<String>("revisiondate").ToLocalChecked(), Nan::New<Number>(r.revisiondate));
-    }
-    else
-    {
+    if (res == 0) {
+        obj["product"] = Napi::String::New(env, r.product);
+        obj["copyright"] = Napi::String::New(env, r.copyright);
+        obj["revision"] = Napi::Number::New(env, r.revision);
+        obj["revisiondate"] = Napi::Number::New(env, r.revisiondate);
+    } else {
         std::stringstream msg;
         msg << "Sorry error happened retrieving Ghostscript version info. Error code: " << res;
-        return Nan::ThrowError(Nan::New<String>(msg.str()).ToLocalChecked());
-    }
-    info.GetReturnValue().Set(obj);
+        throw Napi::Error::New(env, msg.str());
+    } 
+    return obj;
 }
 
-NAN_METHOD(Execute)
-{
-    Callback *callback = new Callback(info[1].As<Function>());
-    Local<String> JScmd = Local<String>::Cast(info[0]);
-    AsyncQueueWorker(new GhostscriptWorker(callback, *String::Utf8Value(JScmd)));
-    info.GetReturnValue().SetUndefined();
+void Execute(const Napi::CallbackInfo& info) {
+    Napi::Function callback = info[1].As<Napi::Function>();
+    string RAWcmd = info[0].As<Napi::String>().Utf8Value();
+    GhostscriptWorker* gs = new GhostscriptWorker(callback, RAWcmd);
+    gs->Queue();
 }
 
-NAN_METHOD(ExecuteSync)
+void ExecuteSync(const Napi::CallbackInfo& info)
 {
-    Nan::HandleScope();
+    Napi::Env env = info.Env();
 
     if (info.Length() < 1)
     {
-        return Nan::ThrowError("Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
+        throw Napi::Error::New(env, "Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
     }
-    if (!info[0]->IsString())
+    if (!info[0].IsString())
     {
-        return Nan::ThrowError("Sorry executeSync() method's argument should be a string.");
+        throw Napi::Error::New(env, "Sorry executeSync() method's argument should be a string.");
     }
-    Local<String> JScmd = Local<String>::Cast(info[0]);
-    string RAWcmd = *String::Utf8Value(JScmd);  
+    string RAWcmd = info[0].As<Napi::String>().Utf8Value(); 
     vector<string> explodedCmd;
     istringstream iss(RAWcmd);
     for (string RAWcmd; iss >> RAWcmd;)
@@ -261,24 +242,19 @@ NAN_METHOD(ExecuteSync)
     catch (exception &e)
     {
         delete[] gsargv;
-        return Nan::ThrowError(Nan::New<String>(e.what()).ToLocalChecked());
+        throw Napi::Error::New(env, e.what());
     }
 }
 
 //////////////////////////// INIT & CONFIG MODULE //////////////////////////////
 
-NAN_MODULE_INIT(Init)
-{
-    Nan::Set(target, Nan::New<String>("version").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(Version)->GetFunction());
-
-    Nan::Set(target, Nan::New<String>("execute").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(Execute)->GetFunction());
-
-    Nan::Set(target, Nan::New<String>("executeSync").ToLocalChecked(),
-                 Nan::New<FunctionTemplate>(ExecuteSync)->GetFunction());
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
+    exports.Set(Napi::String::New(env, "version"), Napi::Function::New(env, Version));
+    //exports.Set(Napi::String::New(env, "execute"), Napi::Function::New(env, Execute));
+    exports.Set(Napi::String::New(env, "executeSync"), Napi::Function::New(env, ExecuteSync));
+    return exports;
 }
 
-NODE_MODULE(ghostscript4js, Init)
+NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init)
 
 ////////////////////////////////////////////////////////////////////////////////
