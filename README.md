@@ -2,7 +2,7 @@
 <img src="https://raw.githubusercontent.com/NickNaso/ghostscript4js/master/node-love-ghostscript.png"/>
 </p>
 
-# Ghostscript4JS 
+# Ghostscript4JS
 ## This module binds the Ghostscript C API to bring its power to the Node.JS world
 
 * [Introduction](#introduction)
@@ -11,6 +11,7 @@
 * [Installation](#install)
 * [Installation options](#installoptions)
 * [Usage](#usage)
+* [Docker](#docker)
 * [Team](#team)
 * [Acknowledgements](#acknowledgements)
 * [License](#license)
@@ -333,6 +334,42 @@ const gs = require('ghostscript4js')
 console.log(gs.MIN_SUPPORTED_REVISION)
 console.log(gs.MAX_SUPPORTED_REVISION)
 
+```
+
+<a name="docker"></a>
+
+## Docker
+
+Check out the example `Dockerfile` in `examples/docker`. It will create an image based on node 8.x and Debian stretch.
+
+To build the image do:
+
+
+```
+cd examples/docker
+docker build -t ghostscript4js .
+```
+
+Now you can run the image. By default it does `npm start` (which is `node index.js`) and exits.
+
+```
+docker run ghostscript4js
+```
+
+Running the container should output something like:
+
+```
+{ product: 'GPL Ghostscript',
+  copyright: 'Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.',
+  revision: 920,
+  revisiondate: 20160926 }
+```
+
+If you want to look around in the container you can get a shell like:
+
+```
+docker run -it ghostscript4js /bin/bash
+gs --version
 ```
 
 <a name="team"></a>
