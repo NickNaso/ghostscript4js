@@ -84,6 +84,10 @@ describe('Test ghostscript4js', function () {
     }
   })
 
+  it('Should execute Ghostscript command synchronous without parameters and fail with error', function () {
+    expect(gs.executeSync).toThrowError('Sorry method\'s argument should be a string or an array of strings');
+  })
+
   it('Should execute Ghostscript command asynchronous', function (done) {
     gs.execute(cmdAsyncPng)
     .then(() => {

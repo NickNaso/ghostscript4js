@@ -203,24 +203,15 @@ Napi::Value Version(const Napi::CallbackInfo& info) {
     return obj;
 }
 
-void Execute(const Napi::CallbackInfo& info) {
-    Napi::Function callback = info[1].As<Napi::Function>();
-    string RAWcmd = info[0].As<Napi::String>().Utf8Value();
-    GhostscriptWorker* gs = new GhostscriptWorker(callback, RAWcmd);
-    gs->Queue();
-}
-
-void ExecuteSync(const Napi::CallbackInfo& info)
-{
+vector<string> ConvertArguments(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
-
     if (info.Length() < 1)
     {
-        throw Napi::Error::New(env, "Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
+        throw Napi::Error::New(env, "Sorry method requires 1 argument that represent the Ghostscript command.");
     }
     if (!info[0].IsString() && !info[0].IsArray())
     {
-        throw Napi::Error::New(env, "Sorry executeSync() method's argument should be a string or an array of strings");
+        throw Napi::Error::New(env, "Sorry method's argument should be a string or an array of strings");
     }
     vector<string> explodedCmd;
     if (info[0].IsString())
@@ -238,12 +229,26 @@ void ExecuteSync(const Napi::CallbackInfo& info)
             Napi::Value value = array[i];
             if (!value.IsString())
             {
-                throw Napi::Error::New(env, "Sorry executeSync() method's argument should be a string or an array of strings");
+                throw Napi::Error::New(env, "Sorry method's argument should be a string or an array of strings");
             }
             string RAWcmd = value.As<Napi::String>().Utf8Value();
             explodedCmd.push_back(RAWcmd);
         }
     }
+    return explodedCmd;
+}
+
+void Execute(const Napi::CallbackInfo& info) {
+    Napi::Function callback = info[1].As<Napi::Function>();
+    string RAWcmd = info[0].As<Napi::String>().Utf8Value();
+    GhostscriptWorker* gs = new GhostscriptWorker(callback, RAWcmd);
+    gs->Queue();
+}
+
+void ExecuteSync(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    vector<string> explodedCmd = ConvertArguments(info);
     int gsargc = static_cast<int>(explodedCmd.size());
     char **gsargv = new char *[gsargc];
     for (int i = 0; i < gsargc; i++)
