@@ -145,16 +145,12 @@ void GhostscriptManager::DecreaseWorkers()
 class GhostscriptWorker : public Napi::AsyncWorker
 {
   public:
-    GhostscriptWorker(Napi::Function& callback, string RAWcmd)
-        : Napi::AsyncWorker(callback), RAWcmd(RAWcmd) {}
+    GhostscriptWorker(Napi::Function& callback, vector<string> explodedCmd)
+        : Napi::AsyncWorker(callback), explodedCmd(explodedCmd) {}
     ~GhostscriptWorker() {}
 
     void Execute()
     {
-        vector<string> explodedCmd;
-        istringstream iss(RAWcmd);
-        for (string RAWcmd; iss >> RAWcmd;)
-            explodedCmd.push_back(RAWcmd);
         int gsargc = static_cast<int>(explodedCmd.size());
         char **gsargv = new char *[gsargc];
         for (int i = 0; i < gsargc; i++)
@@ -182,7 +178,7 @@ class GhostscriptWorker : public Napi::AsyncWorker
     }
 
   private:
-    string RAWcmd;
+    vector<string> explodedCmd;
 };
 
 Napi::Value Version(const Napi::CallbackInfo& info) {
@@ -239,9 +235,9 @@ vector<string> ConvertArguments(const Napi::CallbackInfo& info) {
 }
 
 void Execute(const Napi::CallbackInfo& info) {
+    vector<string> explodedCmd = ConvertArguments(info);
     Napi::Function callback = info[1].As<Napi::Function>();
-    string RAWcmd = info[0].As<Napi::String>().Utf8Value();
-    GhostscriptWorker* gs = new GhostscriptWorker(callback, RAWcmd);
+    GhostscriptWorker* gs = new GhostscriptWorker(callback, explodedCmd);
     gs->Queue();
 }
 
@@ -272,7 +268,7 @@ void ExecuteSync(const Napi::CallbackInfo& info)
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "version"), Napi::Function::New(env, Version));
-    //exports.Set(Napi::String::New(env, "execute"), Napi::Function::New(env, Execute));
+    exports.Set(Napi::String::New(env, "execute"), Napi::Function::New(env, Execute));
     exports.Set(Napi::String::New(env, "executeSync"), Napi::Function::New(env, ExecuteSync));
     return exports;
 }
