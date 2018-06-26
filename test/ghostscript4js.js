@@ -31,14 +31,18 @@ const pdf = 'node-love-ghostscript.pdf'
 const ps = 'node-love-ghostscript.ps'
 const pngSync = 'node-love-ghostscript-sync.png'
 const pngAsync = 'node-love-ghostscript-async.png'
+const pngSyncArray = 'node love ghostscript sync.png'
 const pdfSync = 'node-love-ghostscript-sync.pdf'
 const pdfAsync = 'node-love-ghostscript-async.pdf'
+const pdfSyncArray = 'node love ghostscript sync.pdf'
 
 const cmdSyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
 const cmdAsyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngAsync} -sDEVICE=pngalpha -r144 ${pdf}`
+const cmdSyncPngArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pngalpha', '-o', `${pngSyncArray}`, '-sDEVICE=pngalpha', '-r144', `${pdf}`]
 
 const cmdSyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfSync} -f ${ps}`
 const cmdAsyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfAsync} -f ${ps}`
+const cmdSyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfSyncArray}`, '-f', `${ps}`]
 
 console.log('Start cleanup ...')
 try {
@@ -71,6 +75,15 @@ describe('Test ghostscript4js', function () {
     }
   })
 
+  it('Should execute Ghostscript command synchronous with array based API', function () {
+    try {
+      gs.executeSync(cmdSyncPngArray)
+    } catch (err) {
+      // Handle error
+      throw err
+    }
+  })
+
   it('Should execute Ghostscript command asynchronous', function (done) {
     gs.execute(cmdAsyncPng)
     .then(() => {
@@ -84,6 +97,15 @@ describe('Test ghostscript4js', function () {
   it('Should execute Ghostscript command synchronous', function () {
     try {
       gs.executeSync(cmdSyncPdf)
+    } catch (err) {
+      // Handle error
+      throw err
+    }
+  })
+
+  it('Should execute Ghostscript command synchronous with array based API', function () {
+    try {
+      gs.executeSync(cmdSyncPdfArray)
     } catch (err) {
       // Handle error
       throw err
