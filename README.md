@@ -12,6 +12,7 @@
 * [Installation options](#installoptions)
 * [Usage](#usage)
 * [Docker](#docker)
+* [Code of conduct](CODE_OF_CONDUCT.md)
 * [Team](#team)
 * [Acknowledgements](#acknowledgements)
 * [License](#license)
@@ -78,7 +79,7 @@ Before installing Ghostscript4JS you need to assure you have the following prere
 
 * **Ghostscript** for your Operating System.
 
-## At moment Ghostscript4JS is fully compatible with Ghostscript version 9.19 and 9.21
+## At moment Ghostscript4JS is fully compatible with Ghostscript version 9.19 and 9.23
 
 ## Linux
 
@@ -258,7 +259,7 @@ try {
 
 ### executeSync
 
-**executeSync(cmd)** method takes the Ghostscript command parameters in input as a string and executes in a synchronous way.
+**executeSync(cmd)** method takes the Ghostscript command parameters in input as a string or array of strings and executes in a synchronous way.
 If something wrong happens in calling this method an Error with description and code error will be thrown.
 
 #### Example - executeSync
@@ -278,7 +279,7 @@ try {
 
 ### execute
 
-**execute(cmd, callback)** method takes in input the Ghostscript command parameters as a string and an optional callback. The execution will be asynchronous so this ensure better performance especially in a web application enviroment, because it'll not block the Node.Js event loop.
+**execute(cmd, callback)** method takes in input the Ghostscript command parameters as a string or array of strings and an optional callback. The execution will be asynchronous so this ensure better performance especially in a web application enviroment, because it'll not block the Node.Js event loop.
 This method has an optional callback function as input, in that case, a possible error will be handled by this function. If noone function will be provided the method returns a Promise that will be resolved or rejected as reported in the following example.
 
 #### Example - execute
