@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0 / 2018-07-05
+
+* Complete the port to N-API using node-addon-api
+* Undefinedfilename error on Windows if file path contains spaces - Fix issue [#33](https://github.com/NickNaso/ghostscript4js/issues/33)
+* Added code of conduct
+
 ## 2.0.11-n-api / 2018-03-22
 
 * Empty output with when using pdfwrite - Fix issue [#30](https://github.com/NickNaso/ghostscript4js/issues/30)
