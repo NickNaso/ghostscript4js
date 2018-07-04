@@ -6,7 +6,7 @@
 * Undefinedfilename error on Windows if file path contains spaces - Fix issue [#33](https://github.com/NickNaso/ghostscript4js/issues/33)
 * Added code of conduct
 * Small updates on documentation - executeSync and execute function allow to pass array of strings as arguments.
-* Verifired and updated the compatibility against the ghostscript version 9.23
+* Verified and updated the compatibility against the ghostscript version 9.23
 
 ## 2.0.11-n-api / 2018-03-22
 
