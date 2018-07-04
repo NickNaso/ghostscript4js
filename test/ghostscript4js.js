@@ -31,14 +31,22 @@ const pdf = 'node-love-ghostscript.pdf'
 const ps = 'node-love-ghostscript.ps'
 const pngSync = 'node-love-ghostscript-sync.png'
 const pngAsync = 'node-love-ghostscript-async.png'
+const pngSyncArray = 'node love ghostscript sync.png'
+const pngAsyncArray = 'node love ghostscript async.png'
 const pdfSync = 'node-love-ghostscript-sync.pdf'
 const pdfAsync = 'node-love-ghostscript-async.pdf'
+const pdfSyncArray = 'node love ghostscript sync.pdf'
+const pdfAsyncArray = 'node love ghostscript async.pdf'
 
 const cmdSyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
 const cmdAsyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngAsync} -sDEVICE=pngalpha -r144 ${pdf}`
+const cmdSyncPngArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pngalpha', '-o', `${pngSyncArray}`, '-sDEVICE=pngalpha', '-r144', `${pdf}`]
+const cmdAsyncPngArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pngalpha', '-o', `${pngAsyncArray}`, '-sDEVICE=pngalpha', '-r144', `${pdf}`]
 
 const cmdSyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfSync} -f ${ps}`
 const cmdAsyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfAsync} -f ${ps}`
+const cmdSyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfSyncArray}`, '-f', `${ps}`]
+const cmdAsyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfAsyncArray}`, '-f', `${ps}`]
 
 console.log('Start cleanup ...')
 try {
@@ -71,6 +79,19 @@ describe('Test ghostscript4js', function () {
     }
   })
 
+  it('Should execute Ghostscript command synchronous with array based API', function () {
+    try {
+      gs.executeSync(cmdSyncPngArray)
+    } catch (err) {
+      // Handle error
+      throw err
+    }
+  })
+
+  it('Should execute Ghostscript command synchronous without parameters and fail with error', function () {
+    expect(gs.executeSync).toThrowError('Sorry method\'s argument should be a string or an array of strings');
+  })
+
   it('Should execute Ghostscript command asynchronous', function (done) {
     gs.execute(cmdAsyncPng)
     .then(() => {
@@ -81,9 +102,28 @@ describe('Test ghostscript4js', function () {
     })   
   })
 
+  it('Should execute Ghostscript command asynchronous with array based API', function (done) {
+    gs.execute(cmdAsyncPngArray)
+    .then(() => {
+      done()
+    })
+    .catch((err) => {
+      done(new Error(new Error('Promise should not be rejected. ' + err)))
+    })
+  })
+
   it('Should execute Ghostscript command synchronous', function () {
     try {
       gs.executeSync(cmdSyncPdf)
+    } catch (err) {
+      // Handle error
+      throw err
+    }
+  })
+
+  it('Should execute Ghostscript command synchronous with array based API', function () {
+    try {
+      gs.executeSync(cmdSyncPdfArray)
     } catch (err) {
       // Handle error
       throw err
@@ -98,6 +138,26 @@ describe('Test ghostscript4js', function () {
     .catch((err) => {
       done()
     })   
+  })
+
+  it('Should execute Ghostscript command asynchronous with array based API', function (done) {
+    gs.execute(cmdAsyncPdfArray)
+    .then(() => {
+      done()
+    })
+    .catch((err) => {
+      done(new Error('Promise should not be rejected. ' + err));
+    })
+  })
+
+  it('Should execute Ghostscript command asynchronous without parameters and fail', function () {
+    gs.execute()
+    .then(() => {
+      done(new Error ('Promise should not be resolved'));
+    })
+    .catch((err) => {
+      expect(() => { throw err }).toThrowError('Sorry method\'s argument should be a string or an array of strings');
+    })
   })
 
   /*it('Should execute Ghostscript command to convert from PDF to PDF/A synchronously', function () {

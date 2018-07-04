@@ -145,16 +145,12 @@ void GhostscriptManager::DecreaseWorkers()
 class GhostscriptWorker : public Napi::AsyncWorker
 {
   public:
-    GhostscriptWorker(Napi::Function& callback, string RAWcmd)
-        : Napi::AsyncWorker(callback), RAWcmd(RAWcmd) {}
+    GhostscriptWorker(Napi::Function& callback, vector<string> explodedCmd)
+        : Napi::AsyncWorker(callback), explodedCmd(explodedCmd) {}
     ~GhostscriptWorker() {}
 
     void Execute()
     {
-        vector<string> explodedCmd;
-        istringstream iss(RAWcmd);
-        for (string RAWcmd; iss >> RAWcmd;)
-            explodedCmd.push_back(RAWcmd);
         int gsargc = static_cast<int>(explodedCmd.size());
         char **gsargv = new char *[gsargc];
         for (int i = 0; i < gsargc; i++)
@@ -182,7 +178,7 @@ class GhostscriptWorker : public Napi::AsyncWorker
     }
 
   private:
-    string RAWcmd;
+    vector<string> explodedCmd;
 };
 
 Napi::Value Version(const Napi::CallbackInfo& info) {
@@ -203,30 +199,52 @@ Napi::Value Version(const Napi::CallbackInfo& info) {
     return obj;
 }
 
+vector<string> ConvertArguments(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() < 1)
+    {
+        throw Napi::Error::New(env, "Sorry method requires 1 argument that represent the Ghostscript command.");
+    }
+    if (!info[0].IsString() && !info[0].IsArray())
+    {
+        throw Napi::Error::New(env, "Sorry method's argument should be a string or an array of strings");
+    }
+    vector<string> explodedCmd;
+    if (info[0].IsString())
+    {
+        string RAWcmd = info[0].As<Napi::String>().Utf8Value();
+        istringstream iss(RAWcmd);
+        for (string RAWcmd; iss >> RAWcmd;)
+            explodedCmd.push_back(RAWcmd);
+    }
+    if (info[0].IsArray())
+    {
+        Napi::Array array = info[0].As<Napi::Array>();
+        for (uint32_t i = 0; i < array.Length(); i++)
+        {
+            Napi::Value value = array[i];
+            if (!value.IsString())
+            {
+                throw Napi::Error::New(env, "Sorry method's argument should be a string or an array of strings");
+            }
+            string RAWcmd = value.As<Napi::String>().Utf8Value();
+            explodedCmd.push_back(RAWcmd);
+        }
+    }
+    return explodedCmd;
+}
+
 void Execute(const Napi::CallbackInfo& info) {
+    vector<string> explodedCmd = ConvertArguments(info);
     Napi::Function callback = info[1].As<Napi::Function>();
-    string RAWcmd = info[0].As<Napi::String>().Utf8Value();
-    GhostscriptWorker* gs = new GhostscriptWorker(callback, RAWcmd);
+    GhostscriptWorker* gs = new GhostscriptWorker(callback, explodedCmd);
     gs->Queue();
 }
 
 void ExecuteSync(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-
-    if (info.Length() < 1)
-    {
-        throw Napi::Error::New(env, "Sorry executeSync() method requires 1 argument that represent the Ghostscript command.");
-    }
-    if (!info[0].IsString())
-    {
-        throw Napi::Error::New(env, "Sorry executeSync() method's argument should be a string.");
-    }
-    string RAWcmd = info[0].As<Napi::String>().Utf8Value(); 
-    vector<string> explodedCmd;
-    istringstream iss(RAWcmd);
-    for (string RAWcmd; iss >> RAWcmd;)
-        explodedCmd.push_back(RAWcmd);
+    vector<string> explodedCmd = ConvertArguments(info);
     int gsargc = static_cast<int>(explodedCmd.size());
     char **gsargv = new char *[gsargc];
     for (int i = 0; i < gsargc; i++)
@@ -250,7 +268,7 @@ void ExecuteSync(const Napi::CallbackInfo& info)
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "version"), Napi::Function::New(env, Version));
-    //exports.Set(Napi::String::New(env, "execute"), Napi::Function::New(env, Execute));
+    exports.Set(Napi::String::New(env, "execute"), Napi::Function::New(env, Execute));
     exports.Set(Napi::String::New(env, "executeSync"), Napi::Function::New(env, ExecuteSync));
     return exports;
 }
