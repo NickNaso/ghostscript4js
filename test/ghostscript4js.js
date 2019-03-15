@@ -28,6 +28,7 @@ const fs = require('fs')
 process.chdir(__dirname) 
 
 const pdf = 'node-love-ghostscript.pdf'
+// Invalid PDF file by taking a text file with Lorem ipsum text and renaming to have .pdf extension
 const pdfInvalid = 'invalid.pdf'
 const ps = 'node-love-ghostscript.ps'
 const pngSync = 'node-love-ghostscript-sync.png'
