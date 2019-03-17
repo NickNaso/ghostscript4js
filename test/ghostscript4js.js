@@ -28,6 +28,8 @@ const fs = require('fs')
 process.chdir(__dirname) 
 
 const pdf = 'node-love-ghostscript.pdf'
+// Invalid PDF file by taking a text file with Lorem ipsum text and renaming to have .pdf extension
+const pdfInvalid = 'invalid.pdf'
 const ps = 'node-love-ghostscript.ps'
 const pngSync = 'node-love-ghostscript-sync.png'
 const pngAsync = 'node-love-ghostscript-async.png'
@@ -43,6 +45,7 @@ const cmdAsyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngAsync} -sDEV
 const cmdSyncPngArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pngalpha', '-o', `${pngSyncArray}`, '-sDEVICE=pngalpha', '-r144', `${pdf}`]
 const cmdAsyncPngArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pngalpha', '-o', `${pngAsyncArray}`, '-sDEVICE=pngalpha', '-r144', `${pdf}`]
 
+const cmdInvalidPdf = `-q -dNOPAUSE -sDEVICE=jpeg -o test/out-%02d.jpg -r144 ${pdfInvalid}`
 const cmdSyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfSync} -f ${ps}`
 const cmdAsyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfAsync} -f ${ps}`
 const cmdSyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfSyncArray}`, '-f', `${ps}`]
@@ -65,7 +68,8 @@ describe('Test ghostscript4js', function () {
       expect(gs.version).not.toThrow()
       const version = gs.version()
       expect(version.product).toContain('GPL Ghostscript')
-      expect(version.copyright).toContain('Copyright (C) 2017 Artifex Software, Inc.  All rights reserved.')
+      expect(version.copyright).toContain('Copyright (C)')
+      expect(version.copyright).toContain('Artifex Software, Inc.  All rights reserved.')
       expect(version.product).not.toBeLessThan(gs.MIN_SUPPORTED_REVISION)
       expect(version.product).not.toBeLessThan(20160323)
   })
@@ -150,13 +154,25 @@ describe('Test ghostscript4js', function () {
     })
   })
 
-  it('Should execute Ghostscript command asynchronous without parameters and fail', function () {
+  it('Should throw an error if ghostscript command returns nonzero exit code', function (done) {
+    gs.execute(cmdInvalidPdf)
+    .then(() => {
+      done(new Error ('Promise should not be resolved'));
+    })
+    .catch((err) => {
+      expect(() => { throw err }).toThrowError('Sorry error happened executing Ghostscript command. Error code: -100')
+      done();
+    })
+  })
+
+  it('Should execute Ghostscript command asynchronous without parameters and fail', function (done) {
     gs.execute()
     .then(() => {
       done(new Error ('Promise should not be resolved'));
     })
     .catch((err) => {
       expect(() => { throw err }).toThrowError('Sorry method\'s argument should be a string or an array of strings');
+      done();
     })
   })
 
@@ -178,5 +194,4 @@ describe('Test ghostscript4js', function () {
       done()
     })   
   })*/
-
 })

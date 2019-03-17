@@ -75,13 +75,13 @@ void GhostscriptManager::Init()
     code = gsapi_new_instance(&minst, NULL);
     if (code < 0)
     {
-        throw "Sorry error happened creating Ghostscript instance. Error code: " + to_string(code);
+        throw std::runtime_error("Sorry error happened creating Ghostscript instance. Error code: " + to_string(code));
     }
     gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
     code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
     if (code < 0)
     {
-        throw "Sorry error happened in setting the encoding for Ghostscript interpreter. Error code: " + to_string(code);
+        throw std::runtime_error("Sorry error happened in setting the encoding for Ghostscript interpreter. Error code: " + to_string(code));
     }
 }
 
@@ -99,7 +99,7 @@ void GhostscriptManager::Execute(int gsargc, char *gsargv[])
     code = gsapi_init_with_args(minst, gsargc, gsargv);
     if (code < 0 && code != gs_error_Quit)
     {
-        throw "Sorry error happened executing Ghostscript command. Error code: " + to_string(code);
+        throw std::runtime_error("Sorry error happened executing Ghostscript command. Error code: " + to_string(code));
     }
     DecreaseWorkers();
     if (workers == 0)
@@ -118,7 +118,7 @@ void GhostscriptManager::Exit()
     code = gsapi_exit(minst);
     if (code < 0 && code != gs_error_Quit)
     {
-        throw "Sorry error happened during the exit from the Ghostscript interpreter. Error code: " + to_string(code);
+        throw std::runtime_error("Sorry error happened during the exit from the Ghostscript interpreter. Error code: " + to_string(code));
     }
 }
 
@@ -162,12 +162,11 @@ class GhostscriptWorker : public Napi::AsyncWorker
             GhostscriptManager *gm = GhostscriptManager::GetInstance();
             gm->Execute(gsargc, gsargv);
             delete[] gsargv;
-        
         }
         catch (exception &e)
         {
             delete[] gsargv;
-            SetError(Napi::String::New(Env(), e.what()));
+            SetError(e.what());
         }
     }
 
