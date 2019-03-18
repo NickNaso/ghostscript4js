@@ -1,7 +1,7 @@
 {
   "name": "ghostscript4js",
   "description": "Bindings for the Ghostscript C API to the Node.JS world.",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "contributors": [
     {
       "name": "Nicola Del Gobbo",
@@ -10,6 +10,10 @@
     {
       "name": "Mauro Doganieri",
       "email": "mauro.doganieri@gmail.com"
+    },
+    {
+      "name": "Alexander Prinzhorn",
+      "email": "alexander@prinzhorn.it"
     },
     {
       "name": "George Gershevich",
