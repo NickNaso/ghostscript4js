@@ -1,5 +1,14 @@
 # Changelog
 
+
+## 3.1.0 / 2019-03-18
+
+* Fixed and improved the error handling. For more explanations see the PR [#41](https://github.com/NickNaso/ghostscript4js/pull/41)
+    - Add unit test to intercept the error 
+    - Change GhostscriptManager to throw string instead of char*
+    - Change SetError call to set exception string
+    - Fix test to not hardcode ghostscript version to 2017
+
 ## 3.0.0 / 2018-07-05
 
 * Complete the port to N-API using node-addon-api
