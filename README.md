@@ -88,13 +88,7 @@ Before installing Ghostscript4JS you need to assure you have the following prere
 Install Ghostscript
 
 ```bash
-sudo apt-get install ghostscript
-```
-
-then
-
-```bash
-sudo apt-get install libgs-dev
+apt-get install ghostscript libgs-dev
 ```
 
 At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib/x86_64-linux-gnu```
@@ -102,13 +96,7 @@ At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr
 ### Red Hat | Fedora
 
 ```bash
-yum install ghostscript
-```
-
-then
-
-```bash
-yum install ghostscript-devel
+yum install ghostscript ghostscript-devel
 ```
 
 At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib64``` or ```/usr/lib``` based on you architecture
