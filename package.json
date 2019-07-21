@@ -1,7 +1,7 @@
 {
   "name": "ghostscript4js",
   "description": "Bindings for the Ghostscript C API to the Node.JS world.",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "contributors": [
     {
       "name": "Nicola Del Gobbo",
@@ -22,6 +22,9 @@
     {
       "name": "Loren Yu",
       "email": "loren@navapbc.com"
+    },
+    {
+      "name: "Samuel Bronson"
     }
   ],
   "keywords": [
