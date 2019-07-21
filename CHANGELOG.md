@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 3.1.1 / 2019-07-23
+
+* Improvements on documentation
+
 ## 3.1.0 / 2019-03-18
 
 * Fixed and improved the error handling. For more explanations see the PR [#41](https://github.com/NickNaso/ghostscript4js/pull/41)
