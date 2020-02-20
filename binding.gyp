@@ -80,11 +80,13 @@
           ]
         }],
         ['OS=="mac"', {
+          'cflags+': ['-fvisibility=hidden'],
           'xcode_settings': {
-            'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
+            #'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
-            'CLANG_CXX_LIBRARY': 'libc++',
-            'MACOSX_DEPLOYMENT_TARGET': '10.7'
+            #'CLANG_CXX_LIBRARY': 'libc++',
+            'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES', # -fvisibility=hidden
+            #'MACOSX_DEPLOYMENT_TARGET': '10.7'
           },
           'variables': {
             "GS4JS_HOME%": "<!(echo $GS4JS_HOME)",
