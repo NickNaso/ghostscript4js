@@ -1,4 +1,4 @@
-/*******************************************************************************
+/* ******************************************************************************
  * Copyright (c) 2017 Nicola Del Gobbo
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,46 +24,35 @@ class GhostscriptManager
 {
   private:
     void *minst;
-    int workers;
     mutex gs;
-    static bool exists;
     static GhostscriptManager *instance;
     GhostscriptManager()
     {
-        minst = NULL;
-        workers = 0;
+        minst = nullptr;
     }
     void Init();
     void Destroy();
     void Exit();
-    void IncreaseWorkers();
-    void DecreaseWorkers();
 
   public:
     static GhostscriptManager *GetInstance();
     ~GhostscriptManager()
     {
-        exists = false;
+        minst = nullptr;
     };
     void Execute(int gsargc, char *gsargv[]);
 };
 
-bool GhostscriptManager::exists = false;
-GhostscriptManager *GhostscriptManager::instance = NULL;
+GhostscriptManager *GhostscriptManager::instance = nullptr;
 // Static method that create or simple return the instance of the GhostscriptManager
 // following the singleton design pattern
 GhostscriptManager *GhostscriptManager::GetInstance()
 {
-    if (!exists)
+    if (instance == nullptr)
     {
         instance = new GhostscriptManager();
-        exists = true;
-        return instance;
     }
-    else
-    {
-        return instance;
-    }
+    return instance;
 }
 
 // Init is an implementation of gsapi_new_instance.
@@ -75,9 +64,8 @@ void GhostscriptManager::Init()
     code = gsapi_new_instance(&minst, NULL);
     if (code < 0)
     {
-        throw std::runtime_error("Sorry error happened creating Ghostscript instance. Error code: " + to_string(code));
+        throw std::runtime_error("Sorry error happened creating col cazzo Ghostscript instance. Error code: " + to_string(code));
     }
-    gsapi_set_stdio(minst, gsdll_stdin, gsdll_stdout, gsdll_stderr);
     code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
     if (code < 0)
     {
@@ -90,24 +78,17 @@ void GhostscriptManager::Init()
 void GhostscriptManager::Execute(int gsargc, char *gsargv[])
 {
     lock_guard<mutex> lk(gs);
-    if (workers == 0)
-    {
-        Init();
-    }
-    IncreaseWorkers();
+    Init();
     int code = 0;
     code = gsapi_init_with_args(minst, gsargc, gsargv);
+    Exit();
+    Destroy();
     if (code < 0 && code != gs_error_Quit)
     {
         throw std::runtime_error("Sorry error happened executing Ghostscript command. Error code: " + to_string(code));
-    }
-    DecreaseWorkers();
-    if (workers == 0)
-    {
-        Exit();
-        Destroy();
-    }
+    } 
 }
+     
 
 // Exit is an implementation of gsapi_exit.
 // It exits the Ghostscript interpreter.
@@ -128,25 +109,14 @@ void GhostscriptManager::Exit()
 void GhostscriptManager::Destroy()
 {
     gsapi_delete_instance(minst);
-}
-
-// IncreaseWorkers add 1 worker to the total workers on the system.
-void GhostscriptManager::IncreaseWorkers()
-{
-    workers += 1;
-}
-
-// DecreaseWorkers substract 1 worker to the total workers on the system.
-void GhostscriptManager::DecreaseWorkers()
-{
-    workers -= 1;
+    minst = nullptr;
 }
 
 class GhostscriptWorker : public Napi::AsyncWorker
 {
   public:
     GhostscriptWorker(Napi::Function& callback, vector<string> explodedCmd)
-        : Napi::AsyncWorker(callback), explodedCmd(explodedCmd) {}
+        : Napi::AsyncWorker(callback, "ghostcript4js"), explodedCmd(explodedCmd) {}
     ~GhostscriptWorker() {}
 
     void Execute()
@@ -253,6 +223,7 @@ void ExecuteSync(const Napi::CallbackInfo& info)
     try
     {
         GhostscriptManager *gm = GhostscriptManager::GetInstance();
+
         gm->Execute(gsargc, gsargv);
         delete[] gsargv;
     }
