@@ -36,14 +36,11 @@
 
 #include <napi.h>
 
-#include "gdevdsp.h"
-#include "gserrors.h"
-#include "ierrors.h"
 #include "iapi.h"
+
+#define gs_error_Quit -101
 
 //using namespace Napi;
 using namespace std;
-
-#include "ghostscript.c"
 
 #endif //GHOSTSCRIPT4JS_H

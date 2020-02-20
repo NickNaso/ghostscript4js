@@ -1,20 +1,3 @@
-/* Copyright (C) 2001-2012 Artifex Software, Inc.
-   All Rights Reserved.
-
-   This software is provided AS-IS with no warranty, either express or
-   implied.
-
-   This software is distributed under license and may not be copied,
-   modified or distributed except as expressly authorized under the terms
-   of the license contained in the file LICENSE in this distribution.
-
-   Refer to licensing information at http://www.artifex.com or contact
-   Artifex Software, Inc.,  7 Mt. Lassen Drive - Suite A-134, San Rafael,
-   CA  94903, U.S.A., +1(415)492-9861, for further information.
-*/
-
-
-
 /*
  * Public API for Ghostscript interpreter
  * for use both as DLL and for static linking.
@@ -164,56 +147,6 @@ gsapi_new_instance(void **pinstance, void *caller_handle);
 GSDLLEXPORT void GSDLLAPI
 gsapi_delete_instance(void *instance);
 
-/* Set the callback functions for stdio
- * The stdin callback function should return the number of
- * characters read, 0 for EOF, or -1 for error.
- * The stdout and stderr callback functions should return
- * the number of characters written.
- * If a callback address is NULL, the real stdio will be used.
- */
-GSDLLEXPORT int GSDLLAPI
-gsapi_set_stdio(void *instance,
-    int (GSDLLCALLPTR stdin_fn)(void *caller_handle, char *buf, int len),
-    int (GSDLLCALLPTR stdout_fn)(void *caller_handle, const char *str, int len),
-    int (GSDLLCALLPTR stderr_fn)(void *caller_handle, const char *str, int len));
-
-/* Set the callback function for polling.
- * This is used for handling window events or cooperative
- * multitasking.  This function will only be called if
- * Ghostscript was compiled with CHECK_INTERRUPTS
- * as described in gpcheck.h.
- * The polling function should return 0 if all is well,
- * and negative if it wants ghostscript to abort.
- * The polling function must be fast.
- */
-GSDLLEXPORT int GSDLLAPI gsapi_set_poll(void *instance,
-    int (GSDLLCALLPTR poll_fn)(void *caller_handle));
-
-/* Set the display device callback structure.
- * If the display device is used, this must be called
- * after gsapi_new_instance() and before gsapi_init_with_args().
- * See gdevdisp.h for more details.
- */
-GSDLLEXPORT int GSDLLAPI gsapi_set_display_callback(
-   void *instance, display_callback *callback);
-
-/* Set the string containing the list of default device names
- * for example "display x11alpha x11 bbox". Allows the calling
- * application to influence which device(s) gs will try in order
- * to select the default device
- *
- * *Must* be called after gsapi_new_instance() and before
- * gsapi_init_with_args().
- */
-GSDLLEXPORT int GSDLLAPI
-gsapi_set_default_device_list(void *lib, char *list, int listlen);
-
-/* Returns a pointer to the current default device string
- * *Must* be called after gsapi_new_instance().
- */
-GSDLLEXPORT int GSDLLAPI
-gsapi_get_default_device_list(void *lib, char **list, int *listlen);
-
 /* Set the encoding used for the args. By default we assume
  * 'local' encoding. For windows this equates to whatever the current
  * codepage is. For linux this is utf8.
@@ -245,57 +178,6 @@ enum {
 GSDLLEXPORT int GSDLLAPI gsapi_init_with_args(void *instance,
     int argc, char **argv);
 
-#ifdef __WIN32__
-GSDLLEXPORT int GSDLLAPI gsapi_init_with_argsA(void *instance,
-    int argc, char **argv);
-
-GSDLLEXPORT int GSDLLAPI gsapi_init_with_argsW(void *instance,
-    int argc, wchar_t **argv);
-#endif
-
-/*
- * The gsapi_run_* functions are like gs_main_run_* except
- * that the error_object is omitted.
- * If these functions return <= -100, either quit or a fatal
- * error has occured.  You then call gsapi_exit() next.
- * The only exception is gsapi_run_string_continue()
- * which will return gs_error_NeedInput if all is well.
- */
-
-GSDLLEXPORT int GSDLLAPI
-gsapi_run_string_begin(void *instance,
-    int user_errors, int *pexit_code);
-
-GSDLLEXPORT int GSDLLAPI
-gsapi_run_string_continue(void *instance,
-    const char *str, unsigned int length, int user_errors, int *pexit_code);
-
-GSDLLEXPORT int GSDLLAPI
-gsapi_run_string_end(void *instance,
-    int user_errors, int *pexit_code);
-
-GSDLLEXPORT int GSDLLAPI
-gsapi_run_string_with_length(void *instance,
-    const char *str, unsigned int length, int user_errors, int *pexit_code);
-
-GSDLLEXPORT int GSDLLAPI
-gsapi_run_string(void *instance,
-    const char *str, int user_errors, int *pexit_code);
-
-GSDLLEXPORT int GSDLLAPI
-gsapi_run_file(void *instance,
-    const char *file_name, int user_errors, int *pexit_code);
-
-#ifdef __WIN32__
-GSDLLEXPORT int GSDLLAPI
-gsapi_run_fileA(void *instance,
-    const char *file_name, int user_errors, int *pexit_code);
-
-GSDLLEXPORT int GSDLLAPI
-gsapi_run_fileW(void *instance,
-    const wchar_t *file_name, int user_errors, int *pexit_code);
-#endif
-
 /* Exit the interpreter.
  * This must be called on shutdown if gsapi_init_with_args()
  * has been called, and just before gsapi_delete_instance().
@@ -310,49 +192,10 @@ typedef int (GSDLLAPIPTR PFN_gsapi_new_instance)(
     void **pinstance, void *caller_handle);
 typedef void (GSDLLAPIPTR PFN_gsapi_delete_instance)(
     void *instance);
-typedef int (GSDLLAPIPTR PFN_gsapi_set_stdio)(void *instance,
-    int (GSDLLCALLPTR stdin_fn)(void *caller_handle, char *buf, int len),
-    int (GSDLLCALLPTR stdout_fn)(void *caller_handle, const char *str, int len),
-    int (GSDLLCALLPTR stderr_fn)(void *caller_handle, const char *str, int len));
-typedef int (GSDLLAPIPTR PFN_gsapi_set_poll)(void *instance,
-    int(GSDLLCALLPTR poll_fn)(void *caller_handle));
-typedef int (GSDLLAPIPTR PFN_gsapi_set_display_callback)(
-    void *instance, display_callback *callback);
-typedef int (GSDLLAPIPTR PFN_gsapi_set_default_device_list)(
-    void *lib, char *list, int listlen);
-typedef int (GSDLLAPIPTR PFN_gsapi_get_default_device_list)(
-    void *lib, char **list, int *listlen);
 typedef int (GSDLLAPIPTR PFN_gsapi_init_with_args)(
     void *instance, int argc, char **argv);
-#ifdef __WIN32__
-typedef int (GSDLLAPIPTR PFN_gsapi_init_with_argsA)(
-    void *instance, int argc, char **argv);
-typedef int (GSDLLAPIPTR PFN_gsapi_init_with_argsW)(
-    void *instance, int argc, wchar_t **argv);
-#endif
 typedef int (GSDLLAPIPTR PFN_gsapi_set_arg_encoding)(
     void *instance, int encoding);
-typedef int (GSDLLAPIPTR PFN_gsapi_run_string_begin)(
-    void *instance, int user_errors, int *pexit_code);
-typedef int (GSDLLAPIPTR PFN_gsapi_run_string_continue)(
-    void *instance, const char *str, unsigned int length,
-    int user_errors, int *pexit_code);
-typedef int (GSDLLAPIPTR PFN_gsapi_run_string_end)(
-    void *instance, int user_errors, int *pexit_code);
-typedef int (GSDLLAPIPTR PFN_gsapi_run_string_with_length)(
-    void *instance, const char *str, unsigned int length,
-    int user_errors, int *pexit_code);
-typedef int (GSDLLAPIPTR PFN_gsapi_run_string)(
-    void *instance, const char *str,
-    int user_errors, int *pexit_code);
-typedef int (GSDLLAPIPTR PFN_gsapi_run_file)(void *instance,
-    const char *file_name, int user_errors, int *pexit_code);
-#ifdef __WIN32__
-typedef int (GSDLLAPIPTR PFN_gsapi_run_fileA)(void *instance,
-    const char *file_name, int user_errors, int *pexit_code);
-typedef int (GSDLLAPIPTR PFN_gsapi_run_fileW)(void *instance,
-    const wchar_t *file_name, int user_errors, int *pexit_code);
-#endif
 typedef int (GSDLLAPIPTR PFN_gsapi_exit)(void *instance);
 
 #ifdef __MACOS__
