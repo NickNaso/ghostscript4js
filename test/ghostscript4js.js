@@ -51,18 +51,27 @@ const cmdAsyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfAsync} -f ${
 const cmdSyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfSyncArray}`, '-f', `${ps}`]
 const cmdAsyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfAsyncArray}`, '-f', `${ps}`]
 
-console.log('Start cleanup ...')
-try {
-  fs.unlinkSync(pngSync)
-  fs.unlinkSync(pngAsync)
-  fs.unlinkSync(pdfSync)
-  fs.unlinkSync(pdfAsync)
-  console.log('Cleanup competed')
-} catch (err) {
-  console.log('Nothing to clean');
+
+function cleanup() {
+  console.log('Start cleanup ...')
+  try {
+    fs.unlinkSync(pngSync)
+    fs.unlinkSync(pngAsync)
+    fs.unlinkSync(pdfSync)
+    fs.unlinkSync(pdfAsync)
+    fs.unlinkSync(pngSyncArray)
+    fs.unlinkSync(pngAsyncArray)
+    fs.unlinkSync(pdfSyncArray)
+    fs.unlinkSync(pdfAsyncArray)
+    console.log('Cleanup competed')
+  } catch (err) {
+    console.log('Nothing to clean');
+  }
 }
 
 describe('Test ghostscript4js', function () {
+
+  beforeAll(cleanup)
 
   it('Should return the version of Ghoscript', function () {
       expect(gs.version).not.toThrow()
@@ -75,123 +84,87 @@ describe('Test ghostscript4js', function () {
   })
 
   it('Should execute Ghostscript command synchronous', function () {
-    try {
-      gs.executeSync(cmdSyncPng)
-    } catch (err) {
-      // Handle error
-      throw err
+    const executeSync = async function execute() {
+      return gs.executeSync(cmdSyncPng)
     }
+    expect(executeSync).not.toThrow()
   })
 
   it('Should execute Ghostscript command synchronous with array based API', function () {
-    try {
-      gs.executeSync(cmdSyncPngArray)
-    } catch (err) {
-      // Handle error
-      throw err
+    const executeSync = async function execute() {
+      return gs.executeSync(cmdSyncPngArray)
     }
+    expect(executeSync).not.toThrow()
   })
 
   it('Should execute Ghostscript command synchronous without parameters and fail with error', function () {
     expect(gs.executeSync).toThrowError('Sorry method\'s argument should be a string or an array of strings');
   })
 
-  it('Should execute Ghostscript command asynchronous', function (done) {
-    gs.execute(cmdAsyncPng)
-    .then(() => {
-      done()
-    })
-    .catch((err) => {
-      done()
-    })   
+  it('Should execute Ghostscript command asynchronous', async function () {
+    const execute = async function execute() {
+      return gs.execute(cmdAsyncPng)
+    }
+    await expectAsync(execute()).not.toBeRejected()
+    await expectAsync(execute()).toBeResolved()
   })
 
-  it('Should execute Ghostscript command asynchronous with array based API', function (done) {
-    gs.execute(cmdAsyncPngArray)
-    .then(() => {
-      done()
-    })
-    .catch((err) => {
-      done(new Error(new Error('Promise should not be rejected. ' + err)))
-    })
+  it('Should execute Ghostscript command asynchronous with array based API', async function () {
+    const execute = async function execute() {
+      return gs.execute(cmdAsyncPngArray)
+    }
+    await expectAsync(execute()).not.toBeRejected()
+    await expectAsync(execute()).toBeResolved()
   })
 
   it('Should execute Ghostscript command synchronous', function () {
-    try {
-      gs.executeSync(cmdSyncPdf)
-    } catch (err) {
-      // Handle error
-      throw err
+    const executeSync = async function execute() {
+      return gs.executeSync(cmdSyncPdf)
     }
+    expect(executeSync).not.toThrow()
   })
 
   it('Should execute Ghostscript command synchronous with array based API', function () {
-    try {
-      gs.executeSync(cmdSyncPdfArray)
-    } catch (err) {
-      // Handle error
-      throw err
+    const executeSync = async function execute() {
+      return gs.executeSync(cmdSyncPdfArray)
     }
+    expect(executeSync).not.toThrow()
   })
 
-  it('Should execute Ghostscript command asynchronous', function (done) {
-    gs.execute(cmdAsyncPdf)
-    .then(() => {
-      done()
-    })
-    .catch((err) => {
-      done()
-    })   
-  })
-
-  it('Should execute Ghostscript command asynchronous with array based API', function (done) {
-    gs.execute(cmdAsyncPdfArray)
-    .then(() => {
-      done()
-    })
-    .catch((err) => {
-      done(new Error('Promise should not be rejected. ' + err));
-    })
-  })
-
-  it('Should throw an error if ghostscript command returns nonzero exit code', function (done) {
-    gs.execute(cmdInvalidPdf)
-    .then(() => {
-      done(new Error ('Promise should not be resolved'));
-    })
-    .catch((err) => {
-      expect(() => { throw err }).toThrowError('Sorry error happened executing Ghostscript command. Error code: -100')
-      done();
-    })
-  })
-
-  it('Should execute Ghostscript command asynchronous without parameters and fail', function (done) {
-    gs.execute()
-    .then(() => {
-      done(new Error ('Promise should not be resolved'));
-    })
-    .catch((err) => {
-      expect(() => { throw err }).toThrowError('Sorry method\'s argument should be a string or an array of strings');
-      done();
-    })
-  })
-
-  /*it('Should execute Ghostscript command to convert from PDF to PDF/A synchronously', function () {
-    try {
-      gs.executeSync('-dPDFA -dBATCH -dNOPAUSE -dUseCIEColor -sProcessColorModel=DeviceCMYK -sDEVICE=pdfwrite -sPDFACompatibilityPolicy=1 -sOutputFile=my-pdfa-sync.pdf node-love-ghostscript.pdf')
-    } catch (err) {
-      // Handle error
-      throw err
+  it('Should execute Ghostscript command asynchronous', async function () {
+    const execute = async function execute() {
+      return gs.execute(cmdAsyncPdf)
     }
+    await expectAsync(execute()).not.toBeRejected()
+    await expectAsync(execute()).toBeResolved()
   })
 
-  it('Should execute Ghostscript command to convert from PDF to PDF/A synchronously', function (done) {
-    gs.execute('-dPDFA -dBATCH -dNOPAUSE -sProcessColorModel=DeviceCMYK -sDEVICE=pdfwrite -sPDFACompatibilityPolicy=1 -sOutputFile=my-pdfa-async.pdf node-love-ghostscript.pdf')
-    .then(() => {
-      done()
-    })
-    .catch((err) => {
-      done()
-    })   
-  })*/
+  it('Should execute Ghostscript command asynchronous with array based API', async function () {
+    const execute = async function execute() {
+      return gs.execute(cmdAsyncPdfArray)
+    }
+    await expectAsync(execute()).not.toBeRejected()
+    await expectAsync(execute()).toBeResolved()
+  })
+
+  it('Should throw an error if ghostscript command returns nonzero exit code', async function () { 
+    const execute = async function execute() {
+      return gs.execute(cmdInvalidPdf)
+    }   
+    await expectAsync(execute()).toBeRejected()
+    await expectAsync(execute()).not.toBeResolved()
+    await expectAsync(execute()).toBeRejectedWithError('Sorry error happened executing Ghostscript command. Error code: -100')
+  })
+
+  it('Should execute Ghostscript command asynchronous without parameters and fail', async function () {
+    const execute = async function execute() {
+      return gs.execute()
+    }  
+    await expectAsync(execute()).toBeRejected()
+    await expectAsync(execute()).not.toBeResolved()
+    await expectAsync(execute()).toBeRejectedWithError('Sorry method\'s argument should be a string or an array of strings')
+  })
+
+  afterAll(cleanup)
+
 })
