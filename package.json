@@ -1,7 +1,7 @@
 {
   "name": "ghostscript4js",
   "description": "Bindings for the Ghostscript C API to the Node.JS world.",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "contributors": [
     {
       "name": "Nicola Del Gobbo",

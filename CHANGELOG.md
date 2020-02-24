@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.1 / 2020-02-24
+
+* Fixed typo on error message.
+
 ## 3.2.0 / 2020-02-24
 
 * Segmentation fault on multiple runs - Fix issue [#47](https://github.com/NickNaso/ghostscript4js/issues/47)
