@@ -1,7 +1,7 @@
 {
   "name": "ghostscript4js",
   "description": "Bindings for the Ghostscript C API to the Node.JS world.",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "contributors": [
     {
       "name": "Nicola Del Gobbo",
@@ -39,7 +39,7 @@
     "debug": "node-gyp rebuild --debug"
   },
   "engines": {
-    "node": ">= 4.0.0"
+    "node": ">= 6.0.0"
   },
   "gypfile": true,
   "repository": {

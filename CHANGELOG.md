@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.2.0 / 2020-02-24
+
+* Segmentation fault on multiple runs - Fix issue [#47](https://github.com/NickNaso/ghostscript4js/issues/47)
+* Execution stop with: double free or corruption - Fix issue [#49](https://github.com/NickNaso/ghostscript4js/issues/49)
+* Error when calling gs.executeSync - Fix issue [#50](https://github.com/NickNaso/ghostscript4js/issues/50)
 
 ## 3.1.1 / 2019-07-23
 
