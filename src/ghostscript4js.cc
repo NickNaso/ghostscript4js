@@ -64,7 +64,7 @@ void GhostscriptManager::Init()
     code = gsapi_new_instance(&minst, NULL);
     if (code < 0)
     {
-        throw std::runtime_error("Sorry error happened creating col cazzo Ghostscript instance. Error code: " + to_string(code));
+        throw std::runtime_error("Sorry error happened creating Ghostscript instance. Error code: " + to_string(code));
     }
     code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
     if (code < 0)
