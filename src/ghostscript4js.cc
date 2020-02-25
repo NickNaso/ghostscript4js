@@ -17,137 +17,73 @@
  * Mauro Doganieri <mauro.doganieri@gmail.com>
  ******************************************************************************/
 
-#include "ghostscript4js.h"
+#include "ghostscript_manager.h"
+#include <napi.h>
 
-// Lifeclycle management for the Ghostscript instance
-class GhostscriptManager
-{
-  private:
-    void *minst;
-    mutex gs;
-    static GhostscriptManager *instance;
-    GhostscriptManager()
-    {
-        minst = nullptr;
-    }
-    void Init();
-    void Destroy();
-    void Exit();
-
-  public:
-    static GhostscriptManager *GetInstance();
-    ~GhostscriptManager()
-    {
-        minst = nullptr;
-    };
-    void Execute(int gsargc, char *gsargv[]);
-};
-
-GhostscriptManager *GhostscriptManager::instance = nullptr;
-// Static method that create or simple return the instance of the GhostscriptManager
-// following the singleton design pattern
-GhostscriptManager *GhostscriptManager::GetInstance()
-{
-    if (instance == nullptr)
-    {
-        instance = new GhostscriptManager();
-    }
-    return instance;
+Napi::Error CreateError(Napi::Env env, string message, string code) {
+  Napi::Error e = Napi::Error::New(env, message);
+  e.Set("code", Napi::String::New(env, code));
+  return e;
 }
 
-// Init is an implementation of gsapi_new_instance.
-// It returns a global static instance of Ghostscript.
-// i.e. Do not call init more than once, otherwise an error will be returned.
-void GhostscriptManager::Init()
-{
-    int code = 0;
-    code = gsapi_new_instance(&minst, NULL);
-    if (code < 0)
+Napi::Error HandleGSError(Napi::Env env, gs_status status) {
+    Napi::Error e;
+    switch (status)
     {
-        throw std::runtime_error("Sorry error happened creating Ghostscript instance. Error code: " + to_string(code));
+    case gs_new_instance:
+        e = CreateError(env, 
+                "Sorry error happened creating col cazzo Ghostscript instance.", 
+                "GS_NEW_INSTANCE");
+        break;
+    case gs_set_arg_encoding:
+        e = CreateError(env, 
+                "Sorry error happened in setting the encoding for Ghostscript interpreter.", 
+                "GS_SET_ARG_ENCODING");
+        break;
+    case gs_init_with_args:
+        e = CreateError(env, 
+                "Sorry error happened executing Ghostscript command.", 
+                "GS_INIT_WITH_ARGS");
+        break;          
+    case gs_exit:
+        e = CreateError(env, 
+                "Sorry error happened during the exit from the Ghostscript interpreter.", 
+                "GS_EXIT");
+        break;
+    default:
+        e = CreateError(env, 
+                "Sorry unknown error happened using Ghostscript interpreter.", 
+                "GS_UNKNOWN");
+        break;
     }
-    code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
-    if (code < 0)
-    {
-        throw std::runtime_error("Sorry error happened in setting the encoding for Ghostscript interpreter. Error code: " + to_string(code));
-    }
-}
-
-// Execute is an implementation of gsapi_init_with_args.
-// It initialises the Ghostscript interpreter given a set of arguments.
-void GhostscriptManager::Execute(int gsargc, char *gsargv[])
-{
-    lock_guard<mutex> lk(gs);
-    Init();
-    int code = 0;
-    code = gsapi_init_with_args(minst, gsargc, gsargv);
-    Exit();
-    Destroy();
-    if (code < 0 && code != gs_error_Quit)
-    {
-        throw std::runtime_error("Sorry error happened executing Ghostscript command. Error code: " + to_string(code));
-    } 
-}
-     
-
-// Exit is an implementation of gsapi_exit.
-// It exits the Ghostscript interpreter.
-// It must be called if init has been called, and just before destroy.
-void GhostscriptManager::Exit()
-{
-    int code = 0;
-    code = gsapi_exit(minst);
-    if (code < 0 && code != gs_error_Quit)
-    {
-        throw std::runtime_error("Sorry error happened during the exit from the Ghostscript interpreter. Error code: " + to_string(code));
-    }
-}
-
-// Destroy is an implementation of gsapi_delete_instance.
-// It destroys a global static instance of Ghostscript.
-// It should be called only after exit has been called if init has been called.
-void GhostscriptManager::Destroy()
-{
-    gsapi_delete_instance(minst);
-    minst = nullptr;
+    return e;
 }
 
 class GhostscriptWorker : public Napi::AsyncWorker
 {
   public:
-    GhostscriptWorker(Napi::Function& callback, vector<string> explodedCmd)
-        : Napi::AsyncWorker(callback, "ghostcript4js"), explodedCmd(explodedCmd) {}
-    ~GhostscriptWorker() {}
-
+    GhostscriptWorker(Napi::Function& callback, vector<string> command) 
+        : Napi::AsyncWorker(callback, "ghostcript4js"), command(command) {};
     void Execute()
     {
-        int gsargc = static_cast<int>(explodedCmd.size());
-        char **gsargv = new char *[gsargc];
-        for (int i = 0; i < gsargc; i++)
-        {
-            gsargv[i] = (char *)explodedCmd[i].c_str();
-        }
-        try
-        {
-            GhostscriptManager *gm = GhostscriptManager::GetInstance();
-            gm->Execute(gsargc, gsargv);
-            delete[] gsargv;
-        }
-        catch (exception &e)
-        {
-            delete[] gsargv;
-            SetError(e.what());
+        GhostscriptManager *gm = GhostscriptManager::GetInstance();
+        gs_status status = gm->Execute(command);
+        if (status != gs_ok) {
+            SetError("GS_ERROR");
         }
     }
-
     void OnOk()
     {
         Napi::HandleScope scope(Env());
-        Callback().Call({Env().Null()});   
+        Callback().Call({ Env().Null() });   
     }
-
+    void OnError(const Napi::Error& e) {
+        Napi::HandleScope scope(Env());
+        Callback().Call({ HandleGSError(Env(), status).Value() });   
+    }
   private:
-    vector<string> explodedCmd;
+    gs_status status;
+    vector<string> command;
 };
 
 Napi::Value Version(const Napi::CallbackInfo& info) {
@@ -161,10 +97,10 @@ Napi::Value Version(const Napi::CallbackInfo& info) {
         obj["revision"] = Napi::Number::New(env, r.revision);
         obj["revisiondate"] = Napi::Number::New(env, r.revisiondate);
     } else {
-        std::stringstream msg;
-        msg << "Sorry error happened retrieving Ghostscript version info. Error code: " << res;
-        throw Napi::Error::New(env, msg.str());
-    } 
+        CreateError(env, 
+            "Sorry error happened retrieving Ghostscript version info.", 
+            "GS_REVISION").ThrowAsJavaScriptException();
+    }
     return obj;
 }
 
@@ -172,19 +108,24 @@ vector<string> ConvertArguments(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
     if (info.Length() < 1)
     {
-        throw Napi::Error::New(env, "Sorry method requires 1 argument that represent the Ghostscript command.");
+        
+        CreateError(env, 
+            "Sorry method requires 1 argument that represent the Ghostscript command", 
+            "GS_VALIDATION").ThrowAsJavaScriptException();
     }
     if (!info[0].IsString() && !info[0].IsArray())
     {
-        throw Napi::Error::New(env, "Sorry method's argument should be a string or an array of strings");
+         CreateError(env, 
+            "Sorry method's argument should be a string or an array of strings", 
+            "GS_VALIDATION").ThrowAsJavaScriptException();
     }
-    vector<string> explodedCmd;
+    vector<string> cmd;
     if (info[0].IsString())
     {
         string RAWcmd = info[0].As<Napi::String>().Utf8Value();
         istringstream iss(RAWcmd);
         for (string RAWcmd; iss >> RAWcmd;)
-            explodedCmd.push_back(RAWcmd);
+            cmd.push_back(RAWcmd);
     }
     if (info[0].IsArray())
     {
@@ -194,44 +135,32 @@ vector<string> ConvertArguments(const Napi::CallbackInfo& info) {
             Napi::Value value = array[i];
             if (!value.IsString())
             {
-                throw Napi::Error::New(env, "Sorry method's argument should be a string or an array of strings");
+                 CreateError(env, 
+                    "Sorry method's argument should be a string or an array of strings", 
+                    "GS_VALIDATION").ThrowAsJavaScriptException();
             }
             string RAWcmd = value.As<Napi::String>().Utf8Value();
-            explodedCmd.push_back(RAWcmd);
+            cmd.push_back(RAWcmd);
         }
     }
-    return explodedCmd;
+    return cmd;
 }
 
 void Execute(const Napi::CallbackInfo& info) {
-    vector<string> explodedCmd = ConvertArguments(info);
     Napi::Function callback = info[1].As<Napi::Function>();
-    GhostscriptWorker* gs = new GhostscriptWorker(callback, explodedCmd);
+    GhostscriptWorker* gs = new GhostscriptWorker(callback, ConvertArguments(info));
     gs->Queue();
 }
 
 void ExecuteSync(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    vector<string> explodedCmd = ConvertArguments(info);
-    int gsargc = static_cast<int>(explodedCmd.size());
-    char **gsargv = new char *[gsargc];
-    for (int i = 0; i < gsargc; i++)
-    {
-        gsargv[i] = (char *)explodedCmd[i].c_str();
+    GhostscriptManager *gm = GhostscriptManager::GetInstance();
+    gs_status status = gm->Execute(ConvertArguments(info));
+    if (status != gs_ok) {
+        HandleGSError(env, status).ThrowAsJavaScriptException();
     }
-    try
-    {
-        GhostscriptManager *gm = GhostscriptManager::GetInstance();
-
-        gm->Execute(gsargc, gsargv);
-        delete[] gsargv;
-    }
-    catch (exception &e)
-    {
-        delete[] gsargv;
-        throw Napi::Error::New(env, e.what());
-    }
+    return;
 }
 
 //////////////////////////// INIT & CONFIG MODULE //////////////////////////////

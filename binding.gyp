@@ -2,9 +2,13 @@
   "targets": [
     {
       "target_name": "ghostscript4js",
-      "sources": ["src/ghostscript4js.cc"],
-      'cflags!': [ '-fno-exceptions' ],
-      'cflags_cc!': [ '-fno-exceptions' ],
+      'defines': [ 'NAPI_DISABLE_CPP_EXCEPTIONS' ],
+      "sources": [
+        "src/ghostscript4js.cc",
+        "src/ghostscript_manager.cc"
+        ],
+      #'cflags!': [ '-fno-exceptions' ],
+      #'cflags_cc!': [ '-fno-exceptions' ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"
       ],
@@ -83,7 +87,7 @@
           'cflags+': ['-fvisibility=hidden'],
           'xcode_settings': {
             #'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
-            'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+            #'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
             #'CLANG_CXX_LIBRARY': 'libc++',
             'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES', # -fvisibility=hidden
             #'MACOSX_DEPLOYMENT_TARGET': '10.7'
