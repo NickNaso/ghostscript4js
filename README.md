@@ -101,6 +101,18 @@ yum install ghostscript ghostscript-devel
 
 At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib64``` or ```/usr/lib``` based on you architecture
 
+### Arch Linux
+```
+pacman -S ghostscript
+```
+At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib```
+
+### Alpine
+```
+apk add ghostscript
+```
+At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib```
+
 In general, based on your Linux OS and architecture, you have to set the environment variable **GS4JS_HOME** to point on folder containing ```libgs.so``` library.
 
 ## Windows
