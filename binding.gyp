@@ -93,7 +93,7 @@
             "GS4JS_LIB%": "<!(echo $GS4JS_LIB)",
             "conditions": [
               ['"<!(echo $GS4JS_HOME)" == ""', {
-                "GS4JS_HOME%": "/usr/local/lib"
+                "GS4JS_HOME%": "<!(node macOS-lib-path-finder.js)"
               }],
               ['"<!(echo $GS4JS_LIB)" == ""', {
                 "GS4JS_LIB%": "libgs.dylib"
