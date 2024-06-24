@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.2 / 2024-06-24
+
+* Fixed build error on macOS [#69](https://github.com/NickNaso/ghostscript4js/pull/69).
+
 ## 3.2.1 / 2020-02-24
 
 * Fixed typo on error message.
