@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.3 / 2024-06-24
+
+* Fixed error on `package.json`.
+
 ## 3.2.2 / 2024-06-24
 
 * Fixed build error on macOS [#69](https://github.com/NickNaso/ghostscript4js/pull/69).

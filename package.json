@@ -1,7 +1,7 @@
 {
   "name": "ghostscript4js",
   "description": "Bindings for the Ghostscript C API to the Node.JS world.",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "contributors": [
     {
       "name": "Nicola Del Gobbo",
@@ -16,6 +16,10 @@
       "email": "alexander@prinzhorn.it"
     },
     {
+      "name": "Eric Semeniuc",
+      "url": "https://github.com/esemeniuc"
+    },
+    {
       "name": "George Gershevich",
       "email": "george.gershevich@gmail.com"
     },
@@ -23,7 +27,10 @@
       "name": "Loren Yu",
       "email": "loren@navapbc.com"
     },
-    "Samuel Bronson (https://github.com/SamB)"
+    {
+      "name": "Samuel Bronson",
+      "url": "https://github.com/SamB"
+    }
   ],
   "keywords": [
     "ghostscript",
@@ -68,6 +75,7 @@
     "gs4js-env-home.js",
     "gs4js-env-lib.js",
     "gs4js-env-dll.js",
+    "macOS-lib-path-finder.js",
     "binding.gyp",
     "lib/",
     "src/"
