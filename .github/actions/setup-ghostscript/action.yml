@@ -1,0 +1,38 @@
+name: Setup Ghostscript
+description: Install Ghostscript and set GS4JS_HOME to the folder containing its library
+
+inputs:
+  windows-release:
+    description: Ghostscript release installed on Windows (tag of ArtifexSoftware/ghostpdl-downloads)
+    default: gs10080
+
+runs:
+  using: composite
+  steps:
+    - name: Install Ghostscript (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends ghostscript libgs-dev
+        echo "GS4JS_HOME=/usr/lib/$(uname -m)-linux-gnu" >> "$GITHUB_ENV"
+
+    - name: Install Ghostscript (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        brew install ghostscript
+        echo "GS4JS_HOME=$(brew --prefix ghostscript)/lib" >> "$GITHUB_ENV"
+
+    # The installer is extracted instead of executed, so no elevation is needed
+    - name: Install Ghostscript (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      env:
+        GS_RELEASE: ${{ inputs.windows-release }}
+      run: |
+        $installer = Join-Path $env:RUNNER_TEMP "${env:GS_RELEASE}w64.exe"
+        Invoke-WebRequest -Uri "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/$env:GS_RELEASE/${env:GS_RELEASE}w64.exe" -OutFile $installer
+        7z x -y -oC:\gs $installer | Out-Null
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        "GS4JS_HOME=C:/gs/bin" >> $env:GITHUB_ENV
