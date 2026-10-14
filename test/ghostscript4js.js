@@ -79,8 +79,8 @@ describe('Test ghostscript4js', function () {
       expect(version.product).toContain('GPL Ghostscript')
       expect(version.copyright).toContain('Copyright (C)')
       expect(version.copyright).toContain('Artifex Software, Inc.  All rights reserved.')
-      expect(version.product).not.toBeLessThan(gs.MIN_SUPPORTED_REVISION)
-      expect(version.product).not.toBeLessThan(20160323)
+      expect(version.revision).not.toBeLessThan(gs.MIN_SUPPORTED_REVISION)
+      expect(version.revisiondate).not.toBeLessThan(20160323)
   })
 
   it('Should execute Ghostscript command synchronous', function () {

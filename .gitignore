@@ -12,3 +12,11 @@ node_modules
 
 # Metadata for VSCode
 .vscode
+
+# Claude files
+CLAUDE.md
+.claude
+
+# Local tooling
+AGENTS.md
+.agents

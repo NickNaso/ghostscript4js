@@ -1,9 +1,9 @@
-# Official Node.js 8.x lts image based on Debian stretch (has ghostscript 9.20 in its archive)
-FROM node:carbon-stretch
+# Official Node.js 24 image based on Debian bookworm (has Ghostscript 10 in its archive)
+FROM node:24-bookworm
 
-RUN apt-get update
-RUN apt-get --yes install ghostscript
-RUN apt-get --yes install libgs-dev
+RUN apt-get update \
+    && apt-get --yes install --no-install-recommends ghostscript libgs-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 
@@ -12,8 +12,8 @@ WORKDIR /src
 # https://christianfei.com/posts/Cache-speed-up-docker-node-modules/
 COPY package.json .
 
-ENV GS4JS_HOME=/usr/lib/x86_64-linux-gnu
-RUN npm install
+# libgs.so is in the multiarch folder of the image architecture (x86_64 or aarch64)
+RUN GS4JS_HOME="/usr/lib/$(uname -m)-linux-gnu" npm install
 
 # Copy the rest of the source code over
 COPY . .

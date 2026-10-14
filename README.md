@@ -3,20 +3,28 @@
 </p>
 
 # Ghostscript4JS
+
 ## This module binds the Ghostscript C API to bring its power to the Node.JS world
+
+[![CI](https://github.com/NickNaso/ghostscript4js/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/NickNaso/ghostscript4js/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/ghostscript4js)](https://www.npmjs.com/package/ghostscript4js)
 
 * [Introduction](#introduction)
 * [Motivations](#motivations)
+* [Supported versions](#supported)
 * [Prerequisites](#prerequisites)
 * [Installation](#install)
 * [Installation options](#installoptions)
 * [Usage](#usage)
+* [API](#api)
+* [Security](#security)
+* [Development](#development)
+* [Troubleshooting](#troubleshooting)
 * [Docker](#docker)
 * [Code of conduct](CODE_OF_CONDUCT.md)
 * [Team](#team)
 * [Acknowledgements](#acknowledgements)
 * [License](#license)
-
 
 <a name="introduction"></a>
 
@@ -26,173 +34,156 @@
 page description languages. Its main purposes are the rasterization or rendering of such page description language files,
 for the display or printing of document pages, and the conversion between PostScript and PDF files.
 
-Ghostscript can be used as a raster image processor (RIP) for raster computer printers—for instance, as an input filter
-of line printer daemon—or as the RIP engine behind PostScript and PDF viewers.
+Ghostscript can be used as a raster image processor (RIP) for raster computer printers, for instance as an input filter
+of a line printer daemon, or as the RIP engine behind PostScript and PDF viewers.
 
-Ghostscript can also be used as a file format converter, such as PostScript to PDF converter. The **ps2pdf** conversion program,
-which comes with the ghostscript distribution, is described by its documentation as a "work-alike for nearly all the functionality
-(but not the user interface) of Adobe's Acrobat Distiller product".[3] This converter is basically a thin wrapper around
-ghostscript's pdfwrite output device, which supports PDF/A-1 and PDF/A-2 as well as PDF/X-3 output.[3]
+Ghostscript can also be used as a file format converter, such as a PostScript to PDF converter. The **ps2pdf** conversion program,
+which comes with the Ghostscript distribution, is described by its documentation as a "work-alike for nearly all the functionality
+(but not the user interface) of Adobe's Acrobat Distiller product". This converter is basically a thin wrapper around
+Ghostscript's pdfwrite output device, which supports PDF/A and PDF/X output.
 
-Ghostscript can also serve as the back-end for **PDF** to **raster image** (png, tiff, jpeg, etc.) converter; this is often
+Ghostscript can also serve as the back-end for **PDF** to **raster image** (png, tiff, jpeg, etc.) converters; this is often
 combined with a PostScript printer driver in "virtual printer" PDF creators.
 
 As it takes the form of a language interpreter, Ghostscript can also be used as a general purpose programming environment.
 
-Ghostscript has been ported to many operating systems, including Unix-like systems, classic **Mac OS**, **OpenVMS**, **Microsoft Windows**,
-**Plan 9**, **MS-DOS**, **FreeDOS**, **OS/2**, **Atari TOS and AmigaOS**.
-
-### More resource and info about Ghostscript
+### More resources and info about Ghostscript
 
 * [Introduction to Ghostscript](https://www.gnu.org/software/ghostscript/intro.html)
 
 * [Ghostscript on Wikipedia](https://en.wikipedia.org/wiki/Ghostscript)
 
-* [Ghostscript documentation](https://www.ghostscript.com/Documentation.html)
+* [Ghostscript documentation](https://ghostscript.readthedocs.io/)
 
 <a name="motivations"></a>
 
 ## Motivations
 
-At the time i created this module i was not able to find any module on npm that execute Ghostscript command through its C API,
-otherwise there were some module that call Ghostscript through the execution of the corresponding shell command. This is a
-good way to start using some library from node, but there are the following drawbacks:
+When I created this module I was not able to find any module on npm that executes Ghostscript commands through its C API;
+the existing modules called Ghostscript by executing the corresponding shell command. This is a
+good way to start using a library from Node.js, but it has the following drawbacks:
 
-* **Performance** - The call to the shell command take more time and more resources than calling a library C or C++ API directly from Node.js environment.
+* **Performance** - Calling a shell command takes more time and more resources than calling a C or C++ API directly from Node.js.
 
-* **Errror handler** - Sometimes you cannot intercept and handle errors in a good and a proper way.
+* **Error handling** - Sometimes you cannot intercept and handle errors in a good and proper way.
 
-To fit all needs Ghostscript4JS has sync and async methods so it could be used in a web application where it's very important
-to not block the event loop, so all requests will be served without any delay originated by our application.
+To fit all needs Ghostscript4JS has sync and async methods, so it can be used in a web application where it's very important
+to not block the event loop, so all requests will be served without any delay originated by your application.
 
-[Understanding Node.js event loop](https://nodesource.com/blog/understanding-the-nodejs-event-loop/)
+[Understanding Node.js event loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)
+
+<a name="supported"></a>
+
+## Supported versions
+
+| Component | Supported versions |
+| --- | --- |
+| Ghostscript | from **9.19** to **10.08** |
+| Node.js | **20** or later |
+| Operating systems | Linux, macOS and Windows (x64 and arm64) |
+
+The supported Ghostscript range is also exposed at runtime by the
+[`MIN_SUPPORTED_REVISION` and `MAX_SUPPORTED_REVISION`](#minmax) properties. Ghostscript encodes
+its version as a revision number: for example version 10.08.0 has revision `10080`.
 
 <a name="prerequisites"></a>
 
 ## Prerequisites
 
-Before installing Ghostscript4JS you need to assure you have the following prerequisites:
+Before installing Ghostscript4JS make sure you have the following prerequisites:
 
-* **Node.JS** 20 or later see: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
+* **Node.js** 20 or later, see: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
 
-* **Ghostscript** for your Operating System.
+* **Ghostscript** with its shared library for your operating system, as described below.
 
-The native addon is compiled during installation by [Marmotta](https://github.com/napi-bindings/marmotta), which uses [Zig](https://ziglang.org/) as compiler toolchain, so Python, `make` or a C++ compiler are not required. If Zig is not available on `PATH`, Marmotta downloads it automatically. When downloads are not allowed, set the environment variable **MARMOTTA_ZIG_DIR** to the folder of an existing Zig installation.
+The native addon is compiled during installation by [Marmotta](https://github.com/napi-bindings/marmotta), which uses
+[Zig](https://ziglang.org/) as compiler toolchain, so Python, `make` or a C++ compiler are not required. If Zig is not
+available on `PATH`, Marmotta downloads it automatically. When downloads are not allowed, set the environment variable
+**MARMOTTA_ZIG_DIR** to the folder of an existing Zig installation.
 
-## At moment Ghostscript4JS is fully compatible with Ghostscript from version 9.19 to 9.50
+### Linux
 
-## Linux
+Install Ghostscript and its development package, then set **GS4JS_HOME** to the folder containing `libgs.so`
+when it is not the default `/usr/lib/x86_64-linux-gnu`.
 
-### Debian systems
+| Distribution | Install command | GS4JS_HOME |
+| --- | --- | --- |
+| Debian / Ubuntu (x64) | `apt-get install ghostscript libgs-dev` | not needed |
+| Debian / Ubuntu (arm64) | `apt-get install ghostscript libgs-dev` | `/usr/lib/aarch64-linux-gnu` |
+| Red Hat / Fedora | `dnf install ghostscript ghostscript-devel` | `/usr/lib64` |
+| Arch Linux | `pacman -S ghostscript` | `/usr/lib` |
+| Alpine | `apk add ghostscript ghostscript-dev` | `/usr/lib` |
 
-Install Ghostscript
+In general, set **GS4JS_HOME** to the folder containing the `libgs.so` library for your distribution and architecture.
 
-```bash
-apt-get install ghostscript libgs-dev
-```
+### Windows
 
-At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib/x86_64-linux-gnu```
+* Download the latest Ghostscript release for your platform from the
+  [official download page](https://ghostscript.com/releases/gsdnld.html).
 
-### Red Hat | Fedora
+* Install Ghostscript. By default the installer uses a folder like `C:\Program Files\gs\gs10.08.0`.
 
-```bash
-yum install ghostscript ghostscript-devel
-```
+* Set the environment variable **GS4JS_HOME** to the `bin` folder of your Ghostscript installation, which contains
+  `gsdll64.dll` and `gsdll64.lib`, for example `C:\Program Files\gs\gs10.08.0\bin`. It is not needed when Ghostscript
+  is installed in `C:\gs`, because `C:\gs\bin` is the default.
 
-At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib64``` or ```/usr/lib``` based on you architecture
+During the build the Ghostscript DLL is copied next to the addon, so it is found at runtime without changing `PATH`.
 
-### Arch Linux
-```
-pacman -S ghostscript
-```
-At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib```
+### macOS
 
-### Alpine
-```
-apk add ghostscript
-```
-At this point you need to set the enviroment variable **GS4JS_HOME** to  ```/usr/lib```
+* Install Homebrew following the [official guide](https://brew.sh/).
 
-In general, based on your Linux OS and architecture, you have to set the environment variable **GS4JS_HOME** to point on folder containing ```libgs.so``` library.
-
-## Windows
-
-* Download last Ghostscript version for your platform [x86](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs920/gs920w32.exe) or [x64](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs920/gs920w64.exe)
-
-* Install Ghostscript on your system, for example in ```C:\gs```
-
-* Add the environment variable **GS4JS_HOME** to point to a folder containing Ghostscript's DLL and Library files (Es. gsdll64.dll and gsdll64.lib). Typically, they are located in **bin** folder of you ghostscript installation, for example ```C:\gs\bin```
-
-## macOS
-
-* Install Homebrew following the official guide [here](https://brew.sh/index_it.html)
-
-* Open terminal and install Ghostscript
+* Install Ghostscript:
 
 ```bash
 brew install ghostscript
 ```
 
-* Set the environment variable **GS4JS_HOME** to ```/usr/local/lib```
+The library is found automatically in `/usr/local/lib` or in the Homebrew installation of Ghostscript. If it is installed
+elsewhere, set **GS4JS_HOME** to the folder containing `libgs.dylib`, for example:
 
-## Official installation guide to install Ghostscript
+```bash
+export GS4JS_HOME="$(brew --prefix ghostscript)/lib"
+```
 
-* [Installation from official documentation](https://ghostscript.com/doc/current/Install.htm)
+### Official Ghostscript installation guide
 
-* [Download Ghostscript](https://ghostscript.com/download/gsdnld.html)
+* [Installation from official documentation](https://ghostscript.readthedocs.io/en/latest/Install.html)
+
+* [Download Ghostscript](https://ghostscript.com/releases/gsdnld.html)
 
 <a name="install"></a>
 
 ## Installation
 
-If you want to use ghostscript4js you have to install it. There are two methods for that:
-
-In dependencies of your ```package.json``` add the following item:
-
-```json
-"ghostscript4js": "version"
-```
-
-then digit
-
 ```console
-npm install
+npm install ghostscript4js
 ```
 
-**Example**:
-
-```json
-"ghostscript4js": "*" for the latest version
-"ghostscript4js": "1.0.0" for the version 1.0.0
-```
-
-**OR**
-
-launch this command:
-
-```console
-npm install ghostscript4js --save
-```
+The addon is built from source during the installation, so Ghostscript must be installed first.
 
 <a name="installoptions"></a>
 
 ## Installation options
 
-The module ghostscript4js allows you to use some installation options that you can use when in your operating system something is different against standard installation. Each option can also be set as an environment variable with the same name.
+The following options change where the Ghostscript library is searched during the build. Each option can be passed to
+`npm install` or set as an environment variable with the same name; the environment variable is used when both are set.
 
-**--GS4JS_HOME** Set the GS4JS_HOME variable that represents the path in your system where is located the ghostscript library
+| Option | Description | Default |
+| --- | --- | --- |
+| **GS4JS_HOME** | Folder containing the Ghostscript library | Linux: `/usr/lib/x86_64-linux-gnu`<br>Windows: `C:/gs/bin`<br>macOS: detected automatically |
+| **GS4JS_LIB** | File name of the Ghostscript library | Linux: `libgs.so`<br>Windows: `gsdll64.lib` (`gsdll32.lib` on 32-bit)<br>macOS: `libgs.dylib` |
+| **GS4JS_DLL** | File name of the Ghostscript DLL, only on Windows | `gsdll64.dll` (`gsdll32.dll` on 32-bit) |
 
-Es. ```npm install ghostscript4js --GS4JS_HOME="C:/gs/bin"```
+For example:
 
-**--GS4JS_LIB** Set the GS4JS_LIB variable that represents the file name for the ghostscript library installed in your system
+```console
+npm install ghostscript4js --GS4JS_HOME="C:/Program Files/gs/gs10.08.0/bin"
+```
 
-Es. ```npm install ghostscript4js --GS4JS_LIB="libgs.so"```
-
-### Only for Windows
-
-**--GS4JS_DLL** Set the GS4JS_DLL variable that represents the file name for the ghostscript DLL installed in your windows system
-
-Es. ```npm install ghostscript4js --GS4JS_DLL="gsdll64.dll"```
+```console
+GS4JS_HOME=/usr/lib64 npm install ghostscript4js
+```
 
 <a name="usage"></a>
 
@@ -207,32 +198,33 @@ try {
   // Take decision based on Ghostscript version
   const version = gs.version()
   console.log(version)
-  gs.executeSync('-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf')
+  gs.executeSync('-sDEVICE=pngalpha -o my.png -r144 my.pdf')
 } catch (err) {
   // Handle error
   throw err
 }
 ```
 
+<a name="api"></a>
+
 ## API
 
 ### version
 
-**version()** method returns an object that contains information about version of Ghostscript library
-installed on the system. It is important in those circumstances where you have to take
-decision based on different version.
-The returned data are similar to the example repoted below:
+**version()** returns an object that contains information about the version of the Ghostscript library
+installed on the system. It is useful when you have to take decisions based on different versions.
+The returned data is similar to the example below:
 
 ```js
 {
-  product: "GPL Ghostscript",
-  copyright: "Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.",
-  revision: 919,
-  revisiondate: 20160323
+  product: 'GPL Ghostscript',
+  copyright: 'Copyright (C) 2026 Artifex Software, Inc.  All rights reserved.',
+  revision: 10080,
+  revisiondate: 20260908
 }
 ```
 
-This is a synchronous method and returns the version info or throws an Error to indicate that
+This is a synchronous method that returns the version info or throws an Error to indicate that
 something went wrong during its execution.
 
 #### Example - version
@@ -246,8 +238,8 @@ try {
   const version = gs.version()
   console.log(version)
   // Take decision based on Ghostscript version
-  if (version.revision > 916) {
-    // ... some stuff
+  if (version.revision >= 10000) {
+    // ... Ghostscript 10 or later
   } else {
     // ... other stuff
   }
@@ -259,8 +251,10 @@ try {
 
 ### executeSync
 
-**executeSync(cmd)** method takes the Ghostscript command parameters in input as a string or array of strings and executes in a synchronous way.
-If something wrong happens in calling this method an Error with description and code error will be thrown.
+**executeSync(cmd)** takes the Ghostscript command parameters as a string or an array of strings and executes them synchronously.
+If something goes wrong an Error with description and error code is thrown.
+
+Use an array of strings when a parameter contains spaces, for example a file name, because a string is split on spaces.
 
 #### Example - executeSync
 
@@ -270,7 +264,8 @@ If something wrong happens in calling this method an Error with description and 
 const gs = require('ghostscript4js')
 
 try {
-  gs.executeSync('-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf')
+  gs.executeSync('-sDEVICE=pngalpha -o my.png -r144 my.pdf')
+  gs.executeSync(['-sDEVICE=pngalpha', '-o', 'my image.png', '-r144', 'my document.pdf'])
 } catch (err) {
   // Handle error
   throw err
@@ -279,8 +274,10 @@ try {
 
 ### execute
 
-**execute(cmd, callback)** method takes in input the Ghostscript command parameters as a string or array of strings and an optional callback. The execution will be asynchronous so this ensure better performance especially in a web application enviroment, because it'll not block the Node.Js event loop.
-This method has an optional callback function as input, in that case, a possible error will be handled by this function. If noone function will be provided the method returns a Promise that will be resolved or rejected as reported in the following example.
+**execute(cmd, callback)** takes the Ghostscript command parameters as a string or an array of strings and an optional callback.
+The execution is asynchronous, so it does not block the Node.js event loop: this is the method to use in a web application.
+If a callback is provided, a possible error is passed to it; otherwise the method returns a Promise that is resolved or rejected
+as shown in the following examples.
 
 #### Example - execute
 
@@ -289,13 +286,12 @@ This method has an optional callback function as input, in that case, a possible
 
 const gs = require('ghostscript4js')
 
-let cmd = '-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf'
+const cmd = '-sDEVICE=pngalpha -o my.png -r144 my.pdf'
 gs.execute(cmd, function (err) {
   if (err) {
     console.log("Ooops... something wrong happened")
   }
 })
-
 ```
 
 ```js
@@ -303,27 +299,29 @@ gs.execute(cmd, function (err) {
 
 const gs = require('ghostscript4js')
 
-let cmd = '-sDEVICE=pngalpha -o my.png -sDEVICE=pngalpha -r144 my.pdf'
+const cmd = '-sDEVICE=pngalpha -o my.png -r144 my.pdf'
 gs.execute(cmd)
-.then(() => {
-  console.log("All is ok")
-})
-.catch((err) => {
- console.log("Ooops... something wrong happened")
-})
-
+  .then(() => {
+    console.log("All is ok")
+  })
+  .catch((err) => {
+    console.log("Ooops... something wrong happened")
+  })
 ```
 
 ### Error
 
-The error raised from **ghostscript4js** in all of its method is an instance of Error object that cointains a message that
-describes what happened and at the same time cointains the Ghostscript error code so you can inspect what happened in a better
-way. At this link [Ghostscript error codes](https://ghostscript.com/doc/current/API.htm#return_codes) you can find all Ghostscript errors code.
+The errors raised by **ghostscript4js** in all of its methods are instances of Error with a message that
+describes what happened and contains the Ghostscript error code, so you can inspect what happened in a better
+way. See [Ghostscript return codes](https://ghostscript.readthedocs.io/en/latest/API.html#return-codes) for the list of Ghostscript error codes.
+
+<a name="minmax"></a>
 
 ### Min and Max supported revision
 
-This module was built based on Ghostscript C API that is compatible with some specifics versions. The module has two
-properties  **MIN_SUPPORTED_REVISION** and **MAX_SUPPORTED_REVISION** which respectively indicate the minimum and maximum supported Ghostscript's version.
+This module is built on the Ghostscript C API, which is compatible with specific versions. The module has two
+properties, **MIN_SUPPORTED_REVISION** and **MAX_SUPPORTED_REVISION**, which respectively indicate the minimum and maximum
+supported Ghostscript revision (see [Supported versions](#supported)).
 
 #### Example - Min and Max supported revision
 
@@ -332,43 +330,94 @@ properties  **MIN_SUPPORTED_REVISION** and **MAX_SUPPORTED_REVISION** which resp
 
 const gs = require('ghostscript4js')
 
-console.log(gs.MIN_SUPPORTED_REVISION)
-console.log(gs.MAX_SUPPORTED_REVISION)
+console.log(gs.MIN_SUPPORTED_REVISION) // 919
+console.log(gs.MAX_SUPPORTED_REVISION) // 10080
 
+const { revision } = gs.version()
+if (revision < gs.MIN_SUPPORTED_REVISION || revision > gs.MAX_SUPPORTED_REVISION) {
+  console.warn(`Ghostscript revision ${revision} has not been tested with ghostscript4js`)
+}
 ```
+
+<a name="security"></a>
+
+## Security
+
+Ghostscript interprets PostScript and PDF, which are programming languages, so processing files from untrusted sources
+is a risk. Keep Ghostscript updated, because new releases often fix security issues, and do not disable the `SAFER` mode,
+which is enabled by default since Ghostscript 9.50 and restricts file system access from documents. Avoid the `-dNOSAFER`
+option when you process files you do not control.
+
+<a name="development"></a>
+
+## Development
+
+Clone the repository, install Ghostscript as described in [Prerequisites](#prerequisites) and run:
+
+```console
+npm install    # installs the dependencies and builds the addon with Marmotta
+npm test       # runs the test suite
+npm run debug  # rebuilds the addon without optimizations and with debug information
+```
+
+The build is described in `marmotta.config.js`, and the addon is written to `build/Release/ghostscript4js.node`.
+You can also call Marmotta directly, for example `npx marmotta rebuild`. See the
+[Marmotta documentation](https://github.com/napi-bindings/marmotta#readme) for all commands and options, such as
+`MARMOTTA_HOME` to change where Zig and the temporary build files are stored.
+
+Every pull request and every push to `master` are built and tested on Linux, macOS and Windows. When a release is
+published, the addon is built for each platform and attached to the release as a zip archive. The archives contain only
+the addon: Ghostscript must still be installed, and on Windows `gsdll64.dll` must be placed next to the addon or be
+available on `PATH`.
+
+<a name="troubleshooting"></a>
+
+## Troubleshooting
+
+* **`Ghostscript library not found`** during the installation: the library is not in the folder used for the build.
+  Set **GS4JS_HOME** (and **GS4JS_LIB** if the file name is different) as described in [Installation options](#installoptions).
+
+* **The addon cannot be loaded on Linux** with an error about `libgs.so`: the Ghostscript shared library is not installed
+  or not in the library search path. Install the Ghostscript library package of your distribution.
+
+* **The addon cannot be loaded on Windows**: check that the Ghostscript DLL is in the `build/Release` folder of the module.
+  The DLL also needs the Microsoft Visual C++ Redistributable, which is installed together with Ghostscript.
+
+* **Zig cannot be downloaded**: install Zig separately and add it to `PATH`, or set **MARMOTTA_ZIG_DIR**.
 
 <a name="docker"></a>
 
 ## Docker
 
-Check out the example `Dockerfile` in `examples/docker`. It will create an image based on node 8.x and Debian stretch.
+Check out the example `Dockerfile` in `examples/docker`. It creates an image based on Node.js 24 and Debian bookworm.
 
 To build the image do:
 
-
-```
+```console
 cd examples/docker
 docker build -t ghostscript4js .
 ```
 
 Now you can run the image. By default it does `npm start` (which is `node index.js`) and exits.
 
-```
+```console
 docker run ghostscript4js
 ```
 
 Running the container should output something like:
 
-```
-{ product: 'GPL Ghostscript',
-  copyright: 'Copyright (C) 2016 Artifex Software, Inc.  All rights reserved.',
-  revision: 920,
-  revisiondate: 20160926 }
+```js
+{
+  product: 'GPL Ghostscript',
+  copyright: 'Copyright (C) 2022 Artifex Software, Inc.  All rights reserved.',
+  revision: 10000,
+  revisiondate: 20220921
+}
 ```
 
 If you want to look around in the container you can get a shell like:
 
-```
+```console
 docker run -it ghostscript4js /bin/bash
 gs --version
 ```

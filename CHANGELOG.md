@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+* Replaced node-gyp with [Marmotta](https://github.com/napi-bindings/marmotta) to build the addon: Python, make and a C++ compiler are no longer required.
+* Supported Ghostscript versions are now from 9.19 to 10.08 (`MAX_SUPPORTED_REVISION` is `10080`).
+* **Breaking:** Node.js 20 or later is required.
+* Updated node-addon-api to version 8.
+* Added GitHub Actions to build and test on Linux, macOS and Windows and to attach the built addon to each release.
+* Improved the documentation.
+
 ## 3.2.3 / 2024-06-24
 
 * Fixed error on `package.json`.
