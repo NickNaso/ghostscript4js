@@ -18,6 +18,8 @@ jobs:
     name: Build ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     strategy:
+      # Every platform is built, so a manual run reports all the failures
+      fail-fast: false
       matrix:
         # platform must match the name computed by install.js. An explicit Zig
         # target builds for the baseline CPU of the architecture instead of the
@@ -57,6 +59,9 @@ jobs:
       - name: Build
         run: |
           npm install --ignore-scripts
+          # Git Bash puts its GNU tar first on PATH, which reads C:\... as a
+          # remote host: Marmotta must use the tar of Windows to extract Zig
+          if [ "$RUNNER_OS" = Windows ]; then export PATH="/c/Windows/System32:$PATH"; fi
           npx marmotta build --target ${{ matrix.target }}
 
       # The addon is linked to the library of the Ghostscript version installed
@@ -94,6 +99,7 @@ jobs:
     name: Build ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-24.04
