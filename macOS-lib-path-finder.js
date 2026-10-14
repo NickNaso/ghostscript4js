@@ -29,19 +29,18 @@ const isInstalled = async (command) => {
 }
 
 
-async function main() {
+async function findLibraryPath() {
     try {
         let isGSExists = false
         isGSExists = await isLibraryExists(path.join(SYSTEM_PATH, LIBRARY))
         if (isGSExists) {
-            process.stdout.write(SYSTEM_PATH)
-            return
+            return SYSTEM_PATH
         } else {
             if (!await isInstalled('brew')) {
-                return 1
+                return ''
             }
             if (!await isInstalled('gs')) {
-                return 1
+                return ''
             }
             const cellarPath = (await exec('brew --cellar')).stdout
             const gsVersion = (await exec('gs --version')).stdout
@@ -49,17 +48,16 @@ async function main() {
             isGSExists = await isLibraryExists(path.join(gsLibraryPath, LIBRARY))
 
             if (isGSExists) {
-                process.stdout.write(gsLibraryPath)
-                return
+                return gsLibraryPath
             } else {
-                return 1
+                return ''
             }
         }
     } catch (err) {
         process.emitWarning(err)
-        return 1
+        return ''
     }
-    
+
 }
 
-main()
+module.exports = findLibraryPath

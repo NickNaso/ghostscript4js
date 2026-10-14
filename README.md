@@ -73,11 +73,11 @@ to not block the event loop, so all requests will be served without any delay or
 
 Before installing Ghostscript4JS you need to assure you have the following prerequisites:
 
-* **Node.JS** see: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
-
-* **Node.js native addon build tool** see: [node-gyp](https://github.com/nodejs/node-gyp)
+* **Node.JS** 20 or later see: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
 
 * **Ghostscript** for your Operating System.
+
+The native addon is compiled during installation by [Marmotta](https://github.com/napi-bindings/marmotta), which uses [Zig](https://ziglang.org/) as compiler toolchain, so Python, `make` or a C++ compiler are not required. If Zig is not available on `PATH`, Marmotta downloads it automatically. When downloads are not allowed, set the environment variable **MARMOTTA_ZIG_DIR** to the folder of an existing Zig installation.
 
 ## At moment Ghostscript4JS is fully compatible with Ghostscript from version 9.19 to 9.50
 
@@ -178,7 +178,7 @@ npm install ghostscript4js --save
 
 ## Installation options
 
-The module ghostscript4js allows you to use some installation options that you can use when in your operating system something is different against standard installation.
+The module ghostscript4js allows you to use some installation options that you can use when in your operating system something is different against standard installation. Each option can also be set as an environment variable with the same name.
 
 **--GS4JS_HOME** Set the GS4JS_HOME variable that represents the path in your system where is located the ghostscript library
 
