@@ -56,13 +56,16 @@ jobs:
         # install.js downloads the binary from the release tagged with the package version
         run: test "$TAG" = "$(node -p "require('./package.json').version")"
       - uses: ./.github/actions/setup-ghostscript
+      - run: npm install --ignore-scripts
       - name: Build
-        run: |
-          npm install --ignore-scripts
-          # Git Bash puts its GNU tar first on PATH, which reads C:\... as a
-          # remote host: Marmotta must use the tar of Windows to extract Zig
-          if [ "$RUNNER_OS" = Windows ]; then export PATH="/c/Windows/System32:$PATH"; fi
-          npx marmotta build --target ${{ matrix.target }}
+        if: runner.os != 'Windows'
+        run: npx marmotta build --target ${{ matrix.target }}
+      # Git Bash puts its GNU tar first on PATH, which reads C:\... as a remote
+      # host: Marmotta runs in PowerShell to extract Zig with the tar of Windows
+      - name: Build
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: npx marmotta build --target ${{ matrix.target }}
 
       # The addon is linked to the library of the Ghostscript version installed
       # on the runner, for example /opt/homebrew/opt/ghostscript/lib/libgs.10.06.dylib.
