@@ -39,6 +39,8 @@ const pdfSync = 'node-love-ghostscript-sync.pdf'
 const pdfAsync = 'node-love-ghostscript-async.pdf'
 const pdfSyncArray = 'node love ghostscript sync.pdf'
 const pdfAsyncArray = 'node love ghostscript async.pdf'
+// PDF with an unterminated text object and string that Ghostscript repairs with a warning
+const pdfDamaged = 'damaged.pdf'
 
 const cmdSyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
 const cmdAsyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngAsync} -sDEVICE=pngalpha -r144 ${pdf}`
@@ -50,7 +52,30 @@ const cmdSyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfSync} -f ${ps
 const cmdAsyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfAsync} -f ${ps}`
 const cmdSyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfSyncArray}`, '-f', `${ps}`]
 const cmdAsyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfAsyncArray}`, '-f', `${ps}`]
+const cmdDamagedPdf = `-q -dNOPAUSE -dBATCH -sDEVICE=nullpage ${pdfDamaged}`
+const cmdDamagedPdfStopOnWarning = `-q -dNOPAUSE -dBATCH -dPDFSTOPONWARNING -sDEVICE=nullpage ${pdfDamaged}`
 
+function createDamagedPdf() {
+  const content = 'BT /F1 12 Tf 72 700 Td (Hello) Tj ET\nBT /F1 12 Tf 72 600 Td ( unterminated string Tj ET\n'
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>',
+    `<< /Length ${content.length} >>\nstream\n${content}endstream`,
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'
+  ]
+  let pdf = '%PDF-1.4\n'
+  const offsets = objects.map((object, i) => {
+    const offset = pdf.length
+    pdf += `${i + 1} 0 obj\n${object}\nendobj\n`
+    return offset
+  })
+  const xref = pdf.length
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
+  pdf += offsets.map((offset) => `${String(offset).padStart(10, '0')} 00000 n \n`).join('')
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`
+  fs.writeFileSync(pdfDamaged, pdf)
+}
 
 function cleanup() {
   console.log('Start cleanup ...')
@@ -63,6 +88,7 @@ function cleanup() {
     fs.unlinkSync(pngAsyncArray)
     fs.unlinkSync(pdfSyncArray)
     fs.unlinkSync(pdfAsyncArray)
+    fs.unlinkSync(pdfDamaged)
     console.log('Cleanup competed')
   } catch (err) {
     console.log('Nothing to clean');
@@ -71,7 +97,10 @@ function cleanup() {
 
 describe('Test ghostscript4js', function () {
 
-  beforeAll(cleanup)
+  beforeAll(function () {
+    cleanup()
+    createDamagedPdf()
+  })
 
   it('Should return the version of Ghoscript', function () {
       expect(gs.version).not.toThrow()
@@ -163,6 +192,19 @@ describe('Test ghostscript4js', function () {
     await expectAsync(execute()).toBeRejected()
     await expectAsync(execute()).not.toBeResolved()
     await expectAsync(execute()).toBeRejectedWithError('Sorry method\'s argument should be a string or an array of strings')
+  })
+
+  it('Should repair a damaged PDF and succeed by default', async function () {
+    await expectAsync(gs.execute(cmdDamagedPdf)).toBeResolved()
+  })
+
+  it('Should fail on a damaged PDF with -dPDFSTOPONWARNING', async function () {
+    // -dPDFSTOPONWARNING is supported by the PDF interpreter of Ghostscript 10
+    if (gs.version().revision < 10000) {
+      pending('Ghostscript 10 or later is required')
+    }
+    expect(() => gs.executeSync(cmdDamagedPdfStopOnWarning)).toThrowError('Sorry error happened executing Ghostscript command. Error code: -100')
+    await expectAsync(gs.execute(cmdDamagedPdfStopOnWarning)).toBeRejectedWithError('Sorry error happened executing Ghostscript command. Error code: -100')
   })
 
   afterAll(cleanup)

@@ -315,6 +315,33 @@ The errors raised by **ghostscript4js** in all of its methods are instances of E
 describes what happened and contains the Ghostscript error code, so you can inspect what happened in a better
 way. See [Ghostscript return codes](https://ghostscript.readthedocs.io/en/latest/API.html#return-codes) for the list of Ghostscript error codes.
 
+#### Damaged PDF files
+
+By default Ghostscript tries to process damaged PDF files anyway: it substitutes missing fonts, repairs or ignores invalid
+content and completes successfully, printing only a summary such as `This file had errors that were repaired or ignored`.
+In that case no error is raised, exactly as the `gs` command line program exits with code 0.
+
+To make the execution fail, and get an Error, pass one of these options to Ghostscript:
+
+* **-dPDFSTOPONERROR** stops on errors in the PDF file.
+* **-dPDFSTOPONWARNING** stops on warnings too, which also covers the problems that Ghostscript can repair.
+
+Both options are supported by the PDF interpreter of Ghostscript 10.
+
+```js
+'use strict'
+
+const gs = require('ghostscript4js')
+
+gs.execute('-dPDFSTOPONWARNING -sDEVICE=pngalpha -o my.png -r144 my.pdf')
+  .then(() => {
+    console.log("The PDF was processed without errors or warnings")
+  })
+  .catch((err) => {
+    console.log("The PDF is damaged:", err.message)
+  })
+```
+
 <a name="minmax"></a>
 
 ### Min and Max supported revision
@@ -382,6 +409,9 @@ available on `PATH`.
 
 * **The addon cannot be loaded on Windows**: check that the Ghostscript DLL is in the `build/Release` folder of the module.
   The DLL also needs the Microsoft Visual C++ Redistributable, which is installed together with Ghostscript.
+
+* **A damaged PDF file is processed without errors**: Ghostscript repairs the file and completes successfully.
+  Pass `-dPDFSTOPONERROR` or `-dPDFSTOPONWARNING` to get an error instead, as described in [Damaged PDF files](#damaged-pdf-files).
 
 * **Zig cannot be downloaded**: install Zig separately and add it to `PATH`, or set **MARMOTTA_ZIG_DIR**.
 
