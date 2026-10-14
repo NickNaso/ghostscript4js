@@ -7,6 +7,7 @@
 * **Breaking:** Node.js 20 or later is required.
 * Updated node-addon-api to version 8.
 * Added GitHub Actions to build and test on Linux, macOS and Windows and to attach the built addon to each release.
+* Prebuilt binaries for Linux (x64 and arm64, glibc and musl), macOS (x64 and arm64) and Windows (x64) are attached to each release and downloaded during the installation. The addon is built from source when no binary is available or it cannot be loaded, or when `GS4JS_BUILD_FROM_SOURCE` is set.
 * Improved the documentation.
 * Documented how to get an error for damaged PDF files with `-dPDFSTOPONERROR` and `-dPDFSTOPONWARNING` - Fix issue [#52](https://github.com/NickNaso/ghostscript4js/issues/52)
 

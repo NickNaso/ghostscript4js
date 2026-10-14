@@ -42,7 +42,7 @@
   ],
   "license": "Apache-2.0",
   "scripts": {
-    "install": "marmotta build",
+    "install": "node install.js",
     "test": "node node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json",
     "debug": "marmotta rebuild --debug"
   },
@@ -72,6 +72,7 @@
     "CHANGELOG.md",
     "CODE_OF_CONDUCT.md",
     "index.js",
+    "install.js",
     "marmotta.config.js",
     "macOS-lib-path-finder.js",
     "lib/",
