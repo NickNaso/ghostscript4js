@@ -8,6 +8,7 @@
 * Updated node-addon-api to version 8.
 * Added GitHub Actions to build and test on Linux, macOS and Windows and to attach the built addon to each release.
 * Improved the documentation.
+* Documented how to get an error for damaged PDF files with `-dPDFSTOPONERROR` and `-dPDFSTOPONWARNING` - Fix issue [#52](https://github.com/NickNaso/ghostscript4js/issues/52)
 
 ## 3.2.3 / 2024-06-24
 
