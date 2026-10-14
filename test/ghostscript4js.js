@@ -39,7 +39,7 @@ const pdfSync = 'node-love-ghostscript-sync.pdf'
 const pdfAsync = 'node-love-ghostscript-async.pdf'
 const pdfSyncArray = 'node love ghostscript sync.pdf'
 const pdfAsyncArray = 'node love ghostscript async.pdf'
-// PDF with an unterminated text object and string that Ghostscript repairs with a warning
+// PDF with invalid operators in the content stream, that Ghostscript ignores by default
 const pdfDamaged = 'damaged.pdf'
 
 const cmdSyncPng = `-psconv -q -dNOPAUSE -sDEVICE=pngalpha -o ${pngSync} -sDEVICE=pngalpha -r144 ${pdf}`
@@ -53,10 +53,10 @@ const cmdAsyncPdf = `-psconv -q -dNOPAUSE -sDEVICE=pdfwrite -o ${pdfAsync} -f ${
 const cmdSyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfSyncArray}`, '-f', `${ps}`]
 const cmdAsyncPdfArray = ['-psconv', '-q', '-dNOPAUSE', '-sDEVICE=pdfwrite', '-o', `${pdfAsyncArray}`, '-f', `${ps}`]
 const cmdDamagedPdf = `-q -dNOPAUSE -dBATCH -sDEVICE=nullpage ${pdfDamaged}`
-const cmdDamagedPdfStopOnWarning = `-q -dNOPAUSE -dBATCH -dPDFSTOPONWARNING -sDEVICE=nullpage ${pdfDamaged}`
+const cmdDamagedPdfStopOnError = `-q -dNOPAUSE -dBATCH -dPDFSTOPONERROR -sDEVICE=nullpage ${pdfDamaged}`
 
 function createDamagedPdf() {
-  const content = 'BT /F1 12 Tf 72 700 Td (Hello) Tj ET\nBT /F1 12 Tf 72 600 Td ( unterminated string Tj ET\n'
+  const content = 'BT /F1 12 Tf 72 700 Td (Hello) Tj ET\nq 1 0 0 cm Tj foo 5 re f Q\n'
   const objects = [
     '<< /Type /Catalog /Pages 2 0 R >>',
     '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
@@ -198,13 +198,13 @@ describe('Test ghostscript4js', function () {
     await expectAsync(gs.execute(cmdDamagedPdf)).toBeResolved()
   })
 
-  it('Should fail on a damaged PDF with -dPDFSTOPONWARNING', async function () {
-    // -dPDFSTOPONWARNING is supported by the PDF interpreter of Ghostscript 10
+  it('Should fail on a damaged PDF with -dPDFSTOPONERROR', async function () {
+    // Verified with the PDF interpreter of Ghostscript 10
     if (gs.version().revision < 10000) {
       pending('Ghostscript 10 or later is required')
     }
-    expect(() => gs.executeSync(cmdDamagedPdfStopOnWarning)).toThrowError('Sorry error happened executing Ghostscript command. Error code: -100')
-    await expectAsync(gs.execute(cmdDamagedPdfStopOnWarning)).toBeRejectedWithError('Sorry error happened executing Ghostscript command. Error code: -100')
+    expect(() => gs.executeSync(cmdDamagedPdfStopOnError)).toThrowError('Sorry error happened executing Ghostscript command. Error code: -100')
+    await expectAsync(gs.execute(cmdDamagedPdfStopOnError)).toBeRejectedWithError('Sorry error happened executing Ghostscript command. Error code: -100')
   })
 
   afterAll(cleanup)

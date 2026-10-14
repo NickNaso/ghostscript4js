@@ -323,19 +323,19 @@ In that case no error is raised, exactly as the `gs` command line program exits 
 
 To make the execution fail, and get an Error, pass one of these options to Ghostscript:
 
-* **-dPDFSTOPONERROR** stops on errors in the PDF file.
-* **-dPDFSTOPONWARNING** stops on warnings too, which also covers the problems that Ghostscript can repair.
-
-Both options are supported by the PDF interpreter of Ghostscript 10.
+* **-dPDFSTOPONERROR** stops on errors in the PDF file, for example invalid operators in a page content.
+* **-dPDFSTOPONWARNING** stops on warnings too. Since Ghostscript 10.07.0 this also covers the problems that
+  Ghostscript repairs, such as a text object that is not closed; with earlier versions these problems are still
+  ignored.
 
 ```js
 'use strict'
 
 const gs = require('ghostscript4js')
 
-gs.execute('-dPDFSTOPONWARNING -sDEVICE=pngalpha -o my.png -r144 my.pdf')
+gs.execute('-dPDFSTOPONERROR -sDEVICE=pngalpha -o my.png -r144 my.pdf')
   .then(() => {
-    console.log("The PDF was processed without errors or warnings")
+    console.log("The PDF was processed without errors")
   })
   .catch((err) => {
     console.log("The PDF is damaged:", err.message)
