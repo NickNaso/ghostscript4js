@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "documentation": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "skillPath": "skills/documentation/SKILL.md",
+      "computedHash": "6172f1d7044245f3b6d81df45b5b3913ab2f5e43b06121d6224d573ce0aa5158"
+    },
+    "node": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "skillPath": "skills/node/SKILL.md",
+      "computedHash": "c92b3da4a4ea153207eb72d8f6a77c0e9f7b98d29f5092433143195d154d58c9"
+    },
+    "nodejs-core": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nodejs-core/SKILL.md",
+      "computedHash": "d30c641b80e806dbc913acf822d8551dca92e2ad90ef522a4077b8ec46723793"
+    },
+    "octocat": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "skillPath": "skills/octocat/SKILL.md",
+      "computedHash": "269fbc7c5ea1c80214e038e7e397a1ac3cd35f545ebda7d52db08a829a31abe0"
+    },
+    "snipgrapher": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "skillPath": "skills/snipgrapher/SKILL.md",
+      "computedHash": "ede2ff01d91a1956a0542feb379c646663c40de3b8bbbc749b56a6d262f2312e"
+    },
+    "typescript-magician": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "skillPath": "skills/typescript-magician/SKILL.md",
+      "computedHash": "f6374b47974b828435aabb03dcf474ac328c1439fb4afcb216e274435fc4bba7"
+    }
+  }
+}
