@@ -96,7 +96,8 @@ Before installing Ghostscript4JS make sure you have the following prerequisites:
 
 * **Ghostscript** with its shared library for your operating system, as described below.
 
-The native addon is compiled during installation by [Marmotta](https://github.com/napi-bindings/marmotta), which uses
+On the most common platforms the installation downloads a [prebuilt binary](#prebuilt) of the addon. Otherwise the
+native addon is compiled during installation by [Marmotta](https://github.com/napi-bindings/marmotta), which uses
 [Zig](https://ziglang.org/) as compiler toolchain, so Python, `make` or a C++ compiler are not required. If Zig is not
 available on `PATH`, Marmotta downloads it automatically. When downloads are not allowed, set the environment variable
 **MARMOTTA_ZIG_DIR** to the folder of an existing Zig installation.
@@ -104,7 +105,9 @@ available on `PATH`, Marmotta downloads it automatically. When downloads are not
 ### Linux
 
 Install Ghostscript and its development package, then set **GS4JS_HOME** to the folder containing `libgs.so`
-when it is not the default `/usr/lib/x86_64-linux-gnu`.
+when it is not the default `/usr/lib/x86_64-linux-gnu`. The development package and **GS4JS_HOME** are needed only to
+build the addon: the prebuilt binaries only need the Ghostscript library, for example the `libgs10` package on Debian
+and Ubuntu or the `ghostscript` package on Alpine.
 
 | Distribution | Install command | GS4JS_HOME |
 | --- | --- | --- |
@@ -160,20 +163,50 @@ export GS4JS_HOME="$(brew --prefix ghostscript)/lib"
 npm install ghostscript4js
 ```
 
-The addon is built from source during the installation, so Ghostscript must be installed first.
+Ghostscript must be installed first. The installation uses a prebuilt binary when one is available for the platform,
+and otherwise builds the addon from source.
+
+<a name="prebuilt"></a>
+
+### Prebuilt binaries
+
+Each release includes prebuilt binaries of the addon. During the installation the binary for the current platform is
+downloaded from the [GitHub release](https://github.com/NickNaso/ghostscript4js/releases) of the installed version and
+loaded once to check that it works with the installed Ghostscript. The binaries contain only the addon: Ghostscript is
+not included.
+
+| Platform | Requirements |
+| --- | --- |
+| Linux x64 and arm64 with glibc | glibc 2.28 or later and the Ghostscript 10 library (`libgs.so.10`) |
+| Linux x64 and arm64 with musl, such as Alpine | the Ghostscript 10 library (`libgs.so.10`) |
+| macOS x64 and arm64 | macOS 13 or later and `libgs.dylib` in `/opt/homebrew/lib`, `/usr/local/lib` or `/opt/local/lib`, as installed by Homebrew or MacPorts |
+| Windows x64 | `gsdll64.dll` in the **GS4JS_HOME** folder (`C:/gs/bin` by default), which is copied next to the addon |
+
+The addon is built from source, as described in [Prerequisites](#prerequisites), when:
+
+* there is no binary for the platform, or it cannot be downloaded;
+* the binary cannot be loaded, for example because Ghostscript is not installed or, on Linux, its version is 9;
+* **GS4JS_BUILD_FROM_SOURCE** or npm's `--build-from-source` option is set;
+* **GS4JS_LIB** or **GS4JS_DLL** is set, because they choose the library to link;
+* the package is installed from a clone of the repository.
+
+Run `npm install --foreground-scripts` to see whether the prebuilt binary was used and, if not, why.
 
 <a name="installoptions"></a>
 
 ## Installation options
 
-The following options change where the Ghostscript library is searched during the build. Each option can be passed to
-`npm install` or set as an environment variable with the same name; the environment variable is used when both are set.
+The following options change how the addon is installed and where the Ghostscript library is searched during the build.
+Each option can be passed to `npm install` or set as an environment variable with the same name; the environment
+variable is used when both are set.
 
 | Option | Description | Default |
 | --- | --- | --- |
 | **GS4JS_HOME** | Folder containing the Ghostscript library | Linux: `/usr/lib/x86_64-linux-gnu`<br>Windows: `C:/gs/bin`<br>macOS: detected automatically |
 | **GS4JS_LIB** | File name of the Ghostscript library | Linux: `libgs.so`<br>Windows: `gsdll64.lib` (`gsdll32.lib` on 32-bit)<br>macOS: `libgs.dylib` |
 | **GS4JS_DLL** | File name of the Ghostscript DLL, only on Windows | `gsdll64.dll` (`gsdll32.dll` on 32-bit) |
+| **GS4JS_BUILD_FROM_SOURCE** | Build the addon from source instead of downloading the prebuilt binary | not set |
+| **GS4JS_BINARY_HOST** | URL the prebuilt binaries are downloaded from, for example a mirror of the GitHub releases. The binary is downloaded from `<GS4JS_BINARY_HOST>/<version>/ghostscript4js-<version>-<platform>.node.gz` | `https://github.com/NickNaso/ghostscript4js/releases/download` |
 
 For example:
 
@@ -382,7 +415,7 @@ option when you process files you do not control.
 Clone the repository, install Ghostscript as described in [Prerequisites](#prerequisites) and run:
 
 ```console
-npm install    # installs the dependencies and builds the addon with Marmotta
+npm install    # installs the dependencies and builds the addon with Marmotta, never using a prebuilt binary
 npm test       # runs the test suite
 npm run debug  # rebuilds the addon without optimizations and with debug information
 ```
@@ -393,9 +426,12 @@ You can also call Marmotta directly, for example `npx marmotta rebuild`. See the
 `MARMOTTA_HOME` to change where Zig and the temporary build files are stored.
 
 Every pull request and every push to `master` are built and tested on Linux, macOS and Windows. When a release is
-published, the addon is built for each platform and attached to the release as a zip archive. The archives contain only
-the addon: Ghostscript must still be installed, and on Windows `gsdll64.dll` must be placed next to the addon or be
-available on `PATH`.
+published, the `Release` workflow builds the [prebuilt binaries](#prebuilt), attaches them to the release as
+`ghostscript4js-<version>-<platform>.node.gz` and then installs the package on each platform to check that they are
+downloaded and loaded. The release tag must be the version in `package.json`, for example `3.3.0`, because the
+installation downloads the binaries from that tag. Publish the package to npm after the workflow has completed,
+otherwise the first installations build the addon from source. The workflow can also be run manually to build and test
+the binaries without a release.
 
 <a name="troubleshooting"></a>
 
@@ -414,6 +450,9 @@ available on `PATH`.
   Pass `-dPDFSTOPONERROR` or `-dPDFSTOPONWARNING` to get an error instead, as described in [Damaged PDF files](#damaged-pdf-files).
 
 * **Zig cannot be downloaded**: install Zig separately and add it to `PATH`, or set **MARMOTTA_ZIG_DIR**.
+
+* **The prebuilt binary cannot be downloaded**, for example behind a proxy: the addon is built from source instead. Set
+  **GS4JS_BINARY_HOST** to a mirror of the GitHub releases, or set **GS4JS_BUILD_FROM_SOURCE** to skip the download.
 
 <a name="docker"></a>
 

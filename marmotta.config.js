@@ -87,6 +87,9 @@ module.exports = async ({ directory, target, platform, arch }) => {
             const lib = option('GS4JS_LIB') || 'libgs.dylib'
             config.cxxFlags.push('-fvisibility=hidden')
             config.linkerFlags.push(ensureExists(path.join(home, lib)))
+            // Leaves room for install_name_tool, which makes the prebuilt binaries load
+            // the Ghostscript library through the rpath (see .github/workflows/release.yml)
+            config.linkerFlags.push('-Wl,-headerpad_max_install_names')
             break
         }
         default: {
