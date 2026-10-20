@@ -36,9 +36,9 @@
 
 #include <napi.h>
 
-#include "iapi.h"
+#include <iapi.h>
 
-#define gs_error_Quit -101
+#include <gserrors.h>
 
 //using namespace Napi;
 using namespace std;
