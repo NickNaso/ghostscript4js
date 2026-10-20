@@ -1,19 +1,14 @@
 # Changelog
 
-## Unreleased
+## 4.0.0 / 2026-10-21
 
-* Ghostscript is installed together with the package from [libgs](https://github.com/NickNaso/libgs): the 19 `@libgs/*` packages are `optionalDependencies` and npm installs only the one of the platform, so Ghostscript no longer needs to be installed on the system. On Linux, macOS and FreeBSD Ghostscript is linked statically into the addon; on Windows the DLL of the libgs package is copied next to the addon.
-* The prebuilt binaries are built with libgs and no longer need the Ghostscript library of the system.
-* **Breaking:** the Ghostscript installed on the system is used only when **GS4JS_HOME**, **GS4JS_LIB**, **GS4JS_DLL** or the new **GS4JS_INCLUDE** (the folder of the headers of the Ghostscript API) is set, and the addon is then always built from source. It is also used, with a warning, when no libgs package is installed for the platform.
-* The headers of the Ghostscript API moved from `src/iapi.h` to `src/include/iapi.h`. They are used with the Ghostscript installed on the system, unless **GS4JS_INCLUDE** is set; libgs uses its own headers.
-* Replaced node-gyp with [Marmotta](https://github.com/napi-bindings/marmotta) to build the addon: Python, make and a C++ compiler are no longer required.
-* Supported Ghostscript versions are now from 9.19 to 10.08 (`MAX_SUPPORTED_REVISION` is `10080`).
-* **Breaking:** Node.js 20 or later is required.
-* Updated node-addon-api to version 8.
-* Added GitHub Actions to build and test on Linux, macOS and Windows and to attach the built addon to each release.
-* Prebuilt binaries for Linux (x64 and arm64, glibc and musl), macOS (x64 and arm64) and Windows (x64) are attached to each release and downloaded during the installation. The addon is built from source when no binary is available or it cannot be loaded, or when `GS4JS_BUILD_FROM_SOURCE` is set.
-* Improved the documentation.
-* Documented how to get an error for damaged PDF files with `-dPDFSTOPONERROR` and `-dPDFSTOPONWARNING` - Fix issue [#52](https://github.com/NickNaso/ghostscript4js/issues/52)
+* [a44df7fa83] - feat: use libgs  (Nicola Del Gobbo) https://github.com/NickNaso/ghostscript4js/pull/77
+* [7e25fc8ece] - feat: improve build process for Windows and non-Windows environments in release workflow (Nicola Del Gobbo)
+* [96f5acff66] - feat: improve release workflow by adding fail-fast strategy and Windows tar handling (Nicola Del Gobbo)
+* [a902e370f9] - feat: add support for prebuilt binaries and enhance installation process (Nicola Del Gobbo) https://github.com/NickNaso/ghostscript4js/pull/76
+* [156225b7cb] - feat: document handling of damaged PDF files and add related tests (Nicola Del Gobbo) https://github.com/NickNaso/ghostscript4js/pull/75
+* [9665685497] - feat: enhance documentation and update dependencies in Docker setup (Nicola Del Gobbo) https://github.com/NickNaso/ghostscript4js/pull/74
+* [92f4914101] - refactor: migrate to marmotta build tool (Nicola Del Gobbo) https://github.com/NickNaso/ghostscript4js/pull/73
 
 ## 3.2.3 / 2024-06-24
 
