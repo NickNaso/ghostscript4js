@@ -1,8 +1,8 @@
 name: Release
 
-# Builds the addon for each platform and attaches it to the release, where
-# install.js downloads it from. Run the workflow manually to build and test the
-# binaries without a release.
+# Builds the addon for each platform with libgs and attaches it to the release,
+# where install.js downloads it from. Run the workflow manually to build and
+# test the binaries without a release.
 
 on:
   release:
@@ -55,7 +55,7 @@ jobs:
           TAG: ${{ github.event.release.tag_name }}
         # install.js downloads the binary from the release tagged with the package version
         run: test "$TAG" = "$(node -p "require('./package.json').version")"
-      - uses: ./.github/actions/setup-ghostscript
+      # Installs the libgs package of the runner, which is the platform built
       - run: npm install --ignore-scripts
       - name: Build
         if: runner.os != 'Windows'
@@ -67,24 +67,10 @@ jobs:
         shell: pwsh
         run: npx marmotta build --target ${{ matrix.target }}
 
-      # The addon is linked to the library of the Ghostscript version installed
-      # on the runner, for example /opt/homebrew/opt/ghostscript/lib/libgs.10.06.dylib.
-      # Load libgs.dylib through the rpath instead, from the folders where
-      # Homebrew and MacPorts link it, so any installed version can be used.
-      - name: Load Ghostscript through the rpath
-        if: runner.os == 'macOS'
-        run: |
-          addon=build/Release/ghostscript4js.node
-          libgs=$(otool -L "$addon" | awk '/libgs/ { print $1 }')
-          test -n "$libgs"
-          install_name_tool -change "$libgs" @rpath/libgs.dylib \
-            -add_rpath /opt/homebrew/lib -add_rpath /usr/local/lib -add_rpath /opt/local/lib "$addon"
-          codesign --force --sign - "$addon"
-          otool -L "$addon"
-
       - run: npm test
 
-      # Only the addon is packaged: the Ghostscript library is not redistributed
+      # On Linux and macOS the addon contains Ghostscript. On Windows it loads
+      # the DLL of the libgs package, which install.js copies next to it.
       - name: Package
         run: |
           archive="ghostscript4js-$(node -p "require('./package.json').version")-${{ matrix.platform }}.node.gz"
@@ -121,18 +107,19 @@ jobs:
       - name: Set the archive name
         run: echo "ARCHIVE=ghostscript4js-$(node -p "require('./package.json').version")-${{ matrix.platform }}.node.gz" >> "$GITHUB_ENV"
       # npm runs scripts as the owner of the project folder, so the build runs
-      # in a copy owned by the root user of the container
+      # in a copy owned by the root user of the container. npm installs the
+      # musl libgs package of the container.
       - name: Build and test
         env:
           TARGET: ${{ matrix.target }}
         run: |
           mkdir dist
           docker run --rm -v "$PWD:/src" -e TARGET -e ARCHIVE node:24-alpine sh -euc '
-            apk add --no-cache ghostscript-dev tar xz
+            apk add --no-cache tar xz
             cp -r /src /build
             cd /build
             npm install --ignore-scripts
-            GS4JS_HOME=/usr/lib npx marmotta build --target "$TARGET"
+            npx marmotta build --target "$TARGET"
             npm test
             gzip -9 -c build/Release/ghostscript4js.node > "/src/dist/$ARCHIVE"'
       - uses: actions/upload-artifact@v7
@@ -161,9 +148,10 @@ jobs:
         run: gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber dist/*.node.gz
 
   # Installs the package as a user would, with the oldest supported Node.js
-  # version. The build from source is disabled by pointing Marmotta to a Zig
-  # installation that does not exist, so the installation fails unless the
-  # binary attached to the release is downloaded and loaded.
+  # version and without Ghostscript on the system. The build from source is
+  # disabled by pointing Marmotta to a Zig installation that does not exist, so
+  # the installation fails unless the binary attached to the release is
+  # downloaded and loaded.
   verify:
     name: Install on ${{ matrix.platform }}
     needs: upload
@@ -171,7 +159,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Linux is tested in containers with only the Ghostscript runtime library
+        # Linux is tested in containers, without the libraries of the runner
         include:
           - os: ubuntu-24.04
             platform: linux-x64
@@ -212,19 +200,12 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           docker run --rm -v "$PWD:/work:ro" -e SMOKE_TEST -e MARMOTTA_ZIG_DIR=/no-zig ${{ matrix.image }} sh -euc '
-            if command -v apk > /dev/null; then
-              apk add --no-cache ghostscript
-            else
-              apt-get update && apt-get install --yes --no-install-recommends libgs10
-            fi
             mkdir /app
             cd /app
             npm init --yes > /dev/null
             npm install --foreground-scripts /work/ghostscript4js-*.tgz
             node -e "$SMOKE_TEST"'
 
-      - uses: ./source/.github/actions/setup-ghostscript
-        if: runner.os != 'Linux'
       - name: Install
         if: runner.os != 'Linux'
         env:

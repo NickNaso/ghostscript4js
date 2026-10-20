@@ -1,9 +1,6 @@
-# Official Node.js 24 image based on Debian bookworm (has Ghostscript 10 in its archive)
+# Official Node.js 24 image based on Debian bookworm. Ghostscript is installed
+# by npm from libgs, so the Ghostscript packages of Debian are not needed.
 FROM node:24-bookworm
-
-RUN apt-get update \
-    && apt-get --yes install --no-install-recommends ghostscript libgs-dev \
-    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 
@@ -12,8 +9,7 @@ WORKDIR /src
 # https://christianfei.com/posts/Cache-speed-up-docker-node-modules/
 COPY package.json .
 
-# libgs.so is in the multiarch folder of the image architecture (x86_64 or aarch64)
-RUN GS4JS_HOME="/usr/lib/$(uname -m)-linux-gnu" npm install
+RUN npm install
 
 # Copy the rest of the source code over
 COPY . .

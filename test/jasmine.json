@@ -1,7 +1,8 @@
 {
   "spec_dir": "test",
   "spec_files": [
-      "ghostscript4js.js"
+      "ghostscript4js.js",
+      "libgs.js"
   ],
   "helpers": []
 }

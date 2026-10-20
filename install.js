@@ -19,25 +19,24 @@
 
 'use strict'
 
-// Installs the addon. The prebuilt binary for the current platform is
-// downloaded from the GitHub release of this version. When there is none, or
-// it cannot be loaded (for example because Ghostscript is missing or has a
-// different major version), the addon is built from source with Marmotta.
+// Installs the addon. The prebuilt binary for the current platform, which
+// contains Ghostscript from libgs (on Windows it loads the DLL of the libgs
+// package), is downloaded from the GitHub release of this version. When there
+// is none, or it cannot be loaded, the addon is built from source with
+// Marmotta. It is always built from source to use the Ghostscript installed on
+// the system, chosen with the GS4JS_HOME, GS4JS_LIB, GS4JS_DLL and
+// GS4JS_INCLUDE options.
 
 const fs = require('fs')
 const path = require('path')
 const zlib = require('zlib')
 const { spawnSync } = require('child_process')
 const { version } = require('./package.json')
+const { option, useSystemGhostscript, findLibgs } = require('./libgs')
 
 const ADDON = path.join(__dirname, 'build', 'Release', 'ghostscript4js.node')
 const BINARY_HOST = 'https://github.com/NickNaso/ghostscript4js/releases/download'
 const DOWNLOAD_TIMEOUT = 60 * 1000
-
-// Same lookup as in marmotta.config.js
-function option(name) {
-    return process.env[name] || process.env[`npm_config_${name.toLowerCase()}`] || ''
-}
 
 function isSet(value) {
     return value !== '' && value !== 'false' && value !== '0'
@@ -46,9 +45,8 @@ function isSet(value) {
 function buildFromSource() {
     return isSet(option('GS4JS_BUILD_FROM_SOURCE')) ||
         isSet(process.env.npm_config_build_from_source || '') ||
-        // These options name the library to link, so they only apply to a build
-        isSet(option('GS4JS_LIB')) ||
-        isSet(option('GS4JS_DLL')) ||
+        // The prebuilt binaries use libgs, not the Ghostscript of the system
+        useSystemGhostscript() ||
         // A clone of the repository uses its own sources
         fs.existsSync(path.join(__dirname, '.git'))
 }
@@ -71,12 +69,13 @@ async function download(url) {
     fs.writeFileSync(ADDON, addon)
 }
 
-// The addon loads the Ghostscript DLL from its own directory, as in marmotta.config.js
+// The addon loads the Ghostscript DLL of libgs from its own directory, as in marmotta.config.js
 function copyWindowsDll() {
-    const dll = path.join(option('GS4JS_HOME') || 'C:/gs/bin', 'gsdll64.dll')
-    if (fs.existsSync(dll)) {
-        fs.copyFileSync(dll, path.join(path.dirname(ADDON), 'gsdll64.dll'))
+    const libgs = findLibgs()
+    if (!libgs.installed) {
+        throw new Error(`${libgs.name} is not installed`)
     }
+    fs.copyFileSync(libgs.dll, path.join(path.dirname(ADDON), path.basename(libgs.dll)))
 }
 
 // The addon is loaded in another process, so a crash cannot stop the installation
