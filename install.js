@@ -32,15 +32,11 @@ const path = require('path')
 const zlib = require('zlib')
 const { spawnSync } = require('child_process')
 const { version } = require('./package.json')
-const { option, useSystemGhostscript, findLibgs } = require('./libgs')
+const { option, isSet, isMusl, useSystemGhostscript, findLibgs } = require('./libgs')
 
 const ADDON = path.join(__dirname, 'build', 'Release', 'ghostscript4js.node')
 const BINARY_HOST = 'https://github.com/NickNaso/ghostscript4js/releases/download'
 const DOWNLOAD_TIMEOUT = 60 * 1000
-
-function isSet(value) {
-    return value !== '' && value !== 'false' && value !== '0'
-}
 
 function buildFromSource() {
     return isSet(option('GS4JS_BUILD_FROM_SOURCE')) ||
@@ -54,8 +50,7 @@ function buildFromSource() {
 // The platform in the name of the release assets, for example linux-x64,
 // linux-x64-musl, darwin-arm64 or win32-x64
 function platform() {
-    const musl = process.platform === 'linux' && !process.report.getReport().header.glibcVersionRuntime
-    return `${process.platform}-${process.arch}${musl ? '-musl' : ''}`
+    return `${process.platform}-${process.arch}${isMusl() ? '-musl' : ''}`
 }
 
 async function download(url) {
@@ -69,13 +64,20 @@ async function download(url) {
     fs.writeFileSync(ADDON, addon)
 }
 
-// The addon loads the Ghostscript DLL of libgs from its own directory, as in marmotta.config.js
+// The addon loads the Ghostscript DLL from its own directory, as in
+// marmotta.config.js: the one of libgs or, when npm did not install it, the one
+// of the Ghostscript installed in the default folder, which has the same API
 function copyWindowsDll() {
     const libgs = findLibgs()
+    let dll = libgs.dll
     if (!libgs.installed) {
-        throw new Error(`${libgs.name} is not installed`)
+        const bits = process.arch === 'x64' || process.arch === 'arm64' ? '64' : '32'
+        dll = path.join('C:/gs/bin', `gsdll${bits}.dll`)
+        if (!fs.existsSync(dll)) {
+            throw new Error(`${libgs.name} is not installed and ${dll} was not found`)
+        }
     }
-    fs.copyFileSync(libgs.dll, path.join(path.dirname(ADDON), path.basename(libgs.dll)))
+    fs.copyFileSync(dll, path.join(path.dirname(ADDON), path.basename(dll)))
 }
 
 // The addon is loaded in another process, so a crash cannot stop the installation

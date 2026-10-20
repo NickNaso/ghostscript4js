@@ -35,8 +35,13 @@ function option(name) {
     return process.env[name] || process.env[`npm_config_${name.toLowerCase()}`] || ''
 }
 
+// false and 0 turn an option off, as when it is not set
+function isSet(value) {
+    return value !== '' && value !== 'false' && value !== '0'
+}
+
 function useSystemGhostscript() {
-    return SYSTEM_OPTIONS.some((name) => option(name) !== '')
+    return SYSTEM_OPTIONS.some((name) => isSet(option(name)))
 }
 
 // Zig names of the architectures, as in x86_64-linux-gnu, and their names in Node.js
@@ -58,8 +63,20 @@ const ZIG_OSES = {
     freebsd: 'freebsd'
 }
 
+let musl
+
+// The diagnostic report is slow to create, so it leaves out the network
+// interfaces and is created only once
 function isMusl() {
-    return process.platform === 'linux' && !process.report.getReport().header.glibcVersionRuntime
+    if (musl === undefined) {
+        if (process.platform !== 'linux') {
+            musl = false
+        } else {
+            process.report.excludeNetwork = true
+            musl = !process.report.getReport().header.glibcVersionRuntime
+        }
+    }
+    return musl
 }
 
 // The system a Zig target such as aarch64-linux-musl or x86_64-macos.13 builds for or,
@@ -78,8 +95,9 @@ function system(target) {
         platform: ZIG_OSES[os.split('.')[0]] || os,
         arch: ZIG_ARCHS[arch] || arch,
         musl: abi.startsWith('musl'),
-        // The armv6 and armv7 libraries both have the arm architecture in Zig
-        armVersion: '7'
+        // The armv6 and armv7 libraries both have the arm architecture in Zig,
+        // so the version is chosen with GS4JS_ARM_VERSION
+        armVersion: option('GS4JS_ARM_VERSION') || '7'
     }
 }
 
@@ -133,6 +151,8 @@ function findLibgs(target) {
 module.exports = {
     SYSTEM_OPTIONS,
     option,
+    isSet,
+    isMusl,
     useSystemGhostscript,
     findLibgs
 }

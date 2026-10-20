@@ -38,7 +38,13 @@
 
 #include <iapi.h>
 
+// gserrors.h is not bundled with the package, and the code is the same in all
+// the supported versions of Ghostscript
+#if __has_include(<gserrors.h>)
 #include <gserrors.h>
+#else
+#define gs_error_Quit -101
+#endif
 
 //using namespace Napi;
 using namespace std;

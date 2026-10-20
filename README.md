@@ -134,12 +134,11 @@ The addon is built with the Ghostscript installed on the system, instead of libg
 [Installation options](#installoptions). In this case the addon is always built from source, because the prebuilt
 binaries use libgs. Ghostscript must be installed with its shared library, as described below.
 
-The package does not contain the headers of the Ghostscript API (`iapi.h`): they are taken from **GS4JS_INCLUDE** when
-it is set, otherwise from the libgs package of the platform, which npm installs anyway and which has the same API. When
-neither is available the build stops with an error asking to set **GS4JS_INCLUDE**.
+The headers of the Ghostscript API (`iapi.h`) are taken from **GS4JS_INCLUDE** when it is set, otherwise from the
+package, which contains a copy that works with all the supported versions of Ghostscript.
 
 The Ghostscript of the system is also used, with a warning, when npm did not install a libgs package because there is
-none for the platform or the optional dependencies were disabled. In this case **GS4JS_INCLUDE** must be set.
+none for the platform or the optional dependencies were disabled.
 
 #### Linux
 
@@ -166,9 +165,11 @@ In general, set **GS4JS_HOME** to the folder containing the `libgs.so` library f
 * Set the environment variable **GS4JS_HOME** to the `bin` folder of your Ghostscript installation, which contains
   `gsdll64.dll` and `gsdll64.lib`, for example `C:\Program Files\gs\gs10.08.0\bin`.
 
-The Windows installer does not include the headers of the API, so they are taken from the libgs package, unless
-**GS4JS_INCLUDE** is set to a folder containing `iapi.h`. During the build the
-Ghostscript DLL is copied next to the addon, so it is found at runtime without changing `PATH`.
+The Windows installer does not include the headers of the API, so the ones of the package are used. During the build
+the Ghostscript DLL is copied next to the addon, so it is found at runtime without changing `PATH`.
+
+When npm did not install the libgs package, the prebuilt binary uses the DLL of the Ghostscript installed in
+`C:gsin`, if there is one.
 
 #### macOS
 
@@ -249,7 +250,7 @@ Setting any of **GS4JS_HOME**, **GS4JS_LIB**, **GS4JS_DLL** and **GS4JS_INCLUDE*
 | **GS4JS_HOME** | Folder containing the Ghostscript library of the system | Linux: `/usr/lib/x86_64-linux-gnu`<br>Windows: `C:/gs/bin`<br>macOS: detected automatically |
 | **GS4JS_LIB** | File name of the Ghostscript library of the system | Linux: `libgs.so`<br>Windows: `gsdll64.lib` (`gsdll32.lib` on 32-bit)<br>macOS: `libgs.dylib` |
 | **GS4JS_DLL** | File name of the Ghostscript DLL of the system, only on Windows | `gsdll64.dll` (`gsdll32.dll` on 32-bit) |
-| **GS4JS_INCLUDE** | Folder containing the headers of the Ghostscript API of the system (`iapi.h`) | the `include` folder of the libgs package of the platform |
+| **GS4JS_INCLUDE** | Folder containing the headers of the Ghostscript API of the system (`iapi.h`) | the headers contained in the package |
 | **GS4JS_BUILD_FROM_SOURCE** | Build the addon from source instead of downloading the prebuilt binary | not set |
 | **GS4JS_BINARY_HOST** | URL the prebuilt binaries are downloaded from, for example a mirror of the GitHub releases. The binary is downloaded from `<GS4JS_BINARY_HOST>/<version>/ghostscript4js-<version>-<platform>.node.gz` | `https://github.com/NickNaso/ghostscript4js/releases/download` |
 
@@ -474,7 +475,9 @@ the platform. You can also call Marmotta directly, for example `npx marmotta reb
 To cross-compile with `npx marmotta build --target <zig target>`, the libgs package of the target must be installed,
 for example `@libgs/linux-arm64` for `--target aarch64-linux-gnu`. npm installs only the package of the running
 system, so install the other one with `npm install --no-save --force @libgs/<platform>@<version>`, using the version
-in the `optionalDependencies` of `package.json`.
+in the `optionalDependencies` of `package.json`. The Zig target `arm` is used for both armv6 and armv7: the armv7
+package is chosen unless the environment variable **GS4JS_ARM_VERSION** is set to `6`, for example
+`GS4JS_ARM_VERSION=6 npx marmotta build --target arm-linux-gnueabihf` with `@libgs/linux-armv6` installed.
 
 The version of libgs is set in the `optionalDependencies` of `package.json`, with the same version for all the
 packages. To update Ghostscript, change it for every `@libgs/*` package and update `MAX_SUPPORTED_REVISION` in

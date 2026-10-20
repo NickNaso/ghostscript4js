@@ -50,6 +50,21 @@ describe('libgs', function () {
     }
   })
 
+  it('Should find the armv6 libgs package of a Zig target with GS4JS_ARM_VERSION', function () {
+    const saved = process.env.GS4JS_ARM_VERSION
+    process.env.GS4JS_ARM_VERSION = '6'
+    try {
+      expect(findLibgs('arm-linux-gnueabihf').name).toBe('@libgs/linux-armv6')
+      expect(findLibgs('arm-linux-musleabihf').name).toBe('@libgs/linux-musl-armv6')
+    } finally {
+      if (saved === undefined) {
+        delete process.env.GS4JS_ARM_VERSION
+      } else {
+        process.env.GS4JS_ARM_VERSION = saved
+      }
+    }
+  })
+
   it('Should find the libgs package of the running system', function () {
     const libgs = findLibgs()
     expect(Object.keys(optionalDependencies)).toContain(libgs.name)
@@ -76,6 +91,11 @@ describe('libgs', function () {
         process.env[`npm_config_${name.toLowerCase()}`] = '/ghostscript'
         expect(useSystemGhostscript()).toBe(true)
         delete process.env[`npm_config_${name.toLowerCase()}`]
+        for (const off of ['false', '0']) {
+          process.env[name] = off
+          expect(useSystemGhostscript()).toBe(false)
+          delete process.env[name]
+        }
       }
     } finally {
       for (const variable of variables) {

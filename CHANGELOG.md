@@ -5,7 +5,7 @@
 * Ghostscript is installed together with the package from [libgs](https://github.com/NickNaso/libgs): the 19 `@libgs/*` packages are `optionalDependencies` and npm installs only the one of the platform, so Ghostscript no longer needs to be installed on the system. On Linux, macOS and FreeBSD Ghostscript is linked statically into the addon; on Windows the DLL of the libgs package is copied next to the addon.
 * The prebuilt binaries are built with libgs and no longer need the Ghostscript library of the system.
 * **Breaking:** the Ghostscript installed on the system is used only when **GS4JS_HOME**, **GS4JS_LIB**, **GS4JS_DLL** or the new **GS4JS_INCLUDE** (the folder of the headers of the Ghostscript API) is set, and the addon is then always built from source. It is also used, with a warning, when no libgs package is installed for the platform.
-* **Breaking:** the package no longer contains the headers of the Ghostscript API (`src/iapi.h`). They are taken from the libgs package or, with the Ghostscript installed on the system, from **GS4JS_INCLUDE** when it is set.
+* The headers of the Ghostscript API moved from `src/iapi.h` to `src/include/iapi.h`. They are used with the Ghostscript installed on the system, unless **GS4JS_INCLUDE** is set; libgs uses its own headers.
 * Replaced node-gyp with [Marmotta](https://github.com/napi-bindings/marmotta) to build the addon: Python, make and a C++ compiler are no longer required.
 * Supported Ghostscript versions are now from 9.19 to 10.08 (`MAX_SUPPORTED_REVISION` is `10080`).
 * **Breaking:** Node.js 20 or later is required.

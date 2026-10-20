@@ -26,6 +26,10 @@ const { SYSTEM_OPTIONS, option, useSystemGhostscript, findLibgs } = require('./l
 
 const OUTPUT_DIR = path.join('build', 'Release')
 
+// The headers of the Ghostscript API bundled with the package, the same for
+// all the supported versions of Ghostscript
+const BUNDLED_INCLUDE_DIR = path.join(__dirname, 'src', 'include')
+
 function targetPlatform(target, platform) {
     if (!target) {
         return platform
@@ -80,6 +84,10 @@ function useLibgs(config, libgs, { directory, target, platform, arch }) {
             copyDll(directory, libgs.dll)
             break
         case 'darwin':
+            // Hides only the symbols of the addon: the linker of Zig ignores
+            // -exported_symbols_list, so the ones of the static library stay
+            // exported. Node.js loads the addon with the two-level namespace
+            // of macOS, so they cannot replace the symbols of other libraries.
             config.cxxFlags.push('-fvisibility=hidden')
             config.linkerFlags.push('-lm', '-ldl', '-lpthread', '-liconv')
             break
@@ -99,29 +107,32 @@ function useLibgs(config, libgs, { directory, target, platform, arch }) {
 }
 
 // The folder of the headers of the Ghostscript API: GS4JS_INCLUDE or, when it
-// is not set, the include folder of the libgs package, as the API is the same
-function systemIncludeDir(libgs) {
+// is not set, the headers bundled with the package. The ones of libgs are not
+// used, because they are for its version of Ghostscript.
+function systemIncludeDir() {
     const include = option('GS4JS_INCLUDE')
-    if (include) {
-        if (!fs.existsSync(path.join(include, 'iapi.h'))) {
-            throw new Error(`Ghostscript headers not found: ${path.join(include, 'iapi.h')}. ` +
-                'Set GS4JS_INCLUDE to the folder containing iapi.h')
-        }
-        return include
+    if (!include) {
+        return BUNDLED_INCLUDE_DIR
     }
-    if (libgs.installed) {
-        return libgs.include
+    if (!fs.existsSync(path.join(include, 'iapi.h'))) {
+        throw new Error(`Ghostscript headers not found: ${path.join(include, 'iapi.h')}. ` +
+            'Set GS4JS_INCLUDE to the folder containing iapi.h')
     }
-    throw new Error('The headers of the Ghostscript API were not found, because ' +
-        `${libgs.name} is not installed. Set GS4JS_INCLUDE to the folder containing iapi.h`)
+    return include
 }
 
 // Links the Ghostscript installed on the system, found with the GS4JS_* options
-async function useSystem(config, libgs, { directory, target, platform, arch }) {
-    config.includeDirs.push(systemIncludeDir(libgs))
+async function useSystem(config, { directory, target, platform, arch }) {
+    config.includeDirs.push(systemIncludeDir())
     switch (targetPlatform(target, platform)) {
         case 'win32': {
             const bits = is64Bit(target, arch) ? '64' : '32'
+            // The DLL of the Ghostscript installer exports the functions with
+            // __stdcall, which iapi.h only uses when _Windows is defined. On
+            // 64-bit there is a single calling convention.
+            if (bits === '32') {
+                config.cxxFlags.push('-DGSDLLAPI=__stdcall', '-DGSDLLCALL=__stdcall')
+            }
             const home = option('GS4JS_HOME') || 'C:/gs/bin'
             const lib = option('GS4JS_LIB') || `gsdll${bits}.lib`
             const dll = option('GS4JS_DLL') || `gsdll${bits}.dll`
@@ -134,9 +145,6 @@ async function useSystem(config, libgs, { directory, target, platform, arch }) {
             const lib = option('GS4JS_LIB') || 'libgs.dylib'
             config.cxxFlags.push('-fvisibility=hidden')
             config.linkerFlags.push(ensureExists(path.join(home, lib)))
-            // Leaves room for install_name_tool, to load the Ghostscript library
-            // through the rpath
-            config.linkerFlags.push('-Wl,-headerpad_max_install_names')
             break
         }
         default: {
@@ -157,17 +165,17 @@ module.exports = async (context) => {
         outputDir: OUTPUT_DIR
     }
 
-    const libgs = findLibgs(context.target)
     if (useSystemGhostscript()) {
-        await useSystem(config, libgs, context)
+        await useSystem(config, context)
         return config
     }
+    const libgs = findLibgs(context.target)
     if (libgs.installed) {
         useLibgs(config, libgs, context)
         return config
     }
     // There is no libgs package for the platform, or npm did not install the optional dependencies
     console.warn(`ghostscript4js: ${libgs.name} is not installed, using the Ghostscript installed on the system`)
-    await useSystem(config, libgs, context)
+    await useSystem(config, context)
     return config
 }
