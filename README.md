@@ -78,13 +78,34 @@ to not block the event loop, so all requests will be served without any delay or
 
 | Component | Supported versions |
 | --- | --- |
-| Ghostscript | from **9.19** to **10.08** |
+| Ghostscript | **10.08** from [libgs](https://github.com/NickNaso/libgs), installed with the package<br>from **9.19** to **10.08** when the Ghostscript installed on the system is used |
 | Node.js | **20** or later |
-| Operating systems | Linux, macOS and Windows (x64 and arm64) |
+| Operating systems | Linux, macOS, Windows and FreeBSD, see [Supported platforms](#platforms) |
 
 The supported Ghostscript range is also exposed at runtime by the
 [`MIN_SUPPORTED_REVISION` and `MAX_SUPPORTED_REVISION`](#minmax) properties. Ghostscript encodes
 its version as a revision number: for example version 10.08.0 has revision `10080`.
+
+<a name="platforms"></a>
+
+### Supported platforms
+
+Ghostscript is provided by [libgs](https://github.com/NickNaso/libgs), which builds it for the platforms of Node.js.
+Each platform has its own package, listed in the `optionalDependencies` of ghostscript4js, and npm installs only the
+one matching the `os`, `cpu` and `libc` of the system:
+
+|                   | x86 | x64 | armv6 | armv7 | arm64 | ppc64le | s390x | loong64 | riscv64 |
+| ----------------- | --- | --- | ----- | ----- | ----- | ------- | ----- | ------- | ------- |
+| Windows           |     | ✅  |       |       | ✅    |         |       |         |         |
+| macOS >= 13.5     |     | ✅  |       |       | ✅    |         |       |         |         |
+| Linux glibc       | ✅  | ✅  | ✅    | ✅    | ✅    | ✅      | ✅    | ✅      | ✅      |
+| Linux musl        |     | ✅  | ✅    | ✅    | ✅    |         |       |         |         |
+| FreeBSD           |     | ✅  |       |       |       |         |       |         |         |
+
+On Linux, macOS and FreeBSD Ghostscript is linked statically into the addon, so it does not depend on the libraries of
+the system. On Windows the addon loads the Ghostscript DLL of the libgs package, which is copied next to it. Windows
+x86 has a libgs package, but the addon cannot be built with it: on Windows x86 use the
+[Ghostscript installed on the system](#system).
 
 <a name="prerequisites"></a>
 
@@ -94,32 +115,47 @@ Before installing Ghostscript4JS make sure you have the following prerequisites:
 
 * **Node.js** 20 or later, see: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
 
-* **Ghostscript** with its shared library for your operating system, as described below.
+Ghostscript does not need to be installed: npm installs it together with the package, from [libgs](#platforms). Do not
+disable the optional dependencies (for example with `--omit=optional`), because libgs is installed as one of them.
 
 On the most common platforms the installation downloads a [prebuilt binary](#prebuilt) of the addon. Otherwise the
 native addon is compiled during installation by [Marmotta](https://github.com/napi-bindings/marmotta), which uses
 [Zig](https://ziglang.org/) as compiler toolchain, so Python, `make` or a C++ compiler are not required. If Zig is not
 available on `PATH`, Marmotta downloads it automatically. When downloads are not allowed, set the environment variable
-**MARMOTTA_ZIG_DIR** to the folder of an existing Zig installation.
+**MARMOTTA_ZIG_DIR** to the folder of an existing Zig installation. On macOS the build also needs the Xcode Command
+Line Tools, which provide the `iconv` library of the system.
 
-### Linux
+<a name="system"></a>
 
-Install Ghostscript and its development package, then set **GS4JS_HOME** to the folder containing `libgs.so`
-when it is not the default `/usr/lib/x86_64-linux-gnu`. The development package and **GS4JS_HOME** are needed only to
-build the addon: the prebuilt binaries only need the Ghostscript library, for example the `libgs10` package on Debian
-and Ubuntu or the `ghostscript` package on Alpine.
+### Use the Ghostscript installed on the system
 
-| Distribution | Install command | GS4JS_HOME |
-| --- | --- | --- |
-| Debian / Ubuntu (x64) | `apt-get install ghostscript libgs-dev` | not needed |
-| Debian / Ubuntu (arm64) | `apt-get install ghostscript libgs-dev` | `/usr/lib/aarch64-linux-gnu` |
-| Red Hat / Fedora | `dnf install ghostscript ghostscript-devel` | `/usr/lib64` |
-| Arch Linux | `pacman -S ghostscript` | `/usr/lib` |
-| Alpine | `apk add ghostscript ghostscript-dev` | `/usr/lib` |
+The addon is built with the Ghostscript installed on the system, instead of libgs, when one of the options
+**GS4JS_HOME**, **GS4JS_LIB**, **GS4JS_DLL** or **GS4JS_INCLUDE** is set, as described in
+[Installation options](#installoptions). In this case the addon is always built from source, because the prebuilt
+binaries use libgs. Ghostscript must be installed with its shared library, as described below.
+
+The headers of the Ghostscript API (`iapi.h`) are taken from **GS4JS_INCLUDE** when it is set, otherwise from the
+package, which contains a copy that works with all the supported versions of Ghostscript.
+
+The Ghostscript of the system is also used, with a warning, when npm did not install a libgs package because there is
+none for the platform or the optional dependencies were disabled.
+
+#### Linux
+
+Install Ghostscript and its development package, then set **GS4JS_HOME** to the folder containing `libgs.so` and
+**GS4JS_INCLUDE** to the folder containing `iapi.h`:
+
+| Distribution | Install command | GS4JS_HOME | GS4JS_INCLUDE |
+| --- | --- | --- | --- |
+| Debian / Ubuntu (x64) | `apt-get install ghostscript libgs-dev` | `/usr/lib/x86_64-linux-gnu` | `/usr/include/ghostscript` |
+| Debian / Ubuntu (arm64) | `apt-get install ghostscript libgs-dev` | `/usr/lib/aarch64-linux-gnu` | `/usr/include/ghostscript` |
+| Red Hat / Fedora | `dnf install ghostscript ghostscript-devel` | `/usr/lib64` | `/usr/include/ghostscript` |
+| Arch Linux | `pacman -S ghostscript` | `/usr/lib` | `/usr/include/ghostscript` |
+| Alpine | `apk add ghostscript ghostscript-dev` | `/usr/lib` | `/usr/include/ghostscript` |
 
 In general, set **GS4JS_HOME** to the folder containing the `libgs.so` library for your distribution and architecture.
 
-### Windows
+#### Windows
 
 * Download the latest Ghostscript release for your platform from the
   [official download page](https://ghostscript.com/releases/gsdnld.html).
@@ -127,12 +163,15 @@ In general, set **GS4JS_HOME** to the folder containing the `libgs.so` library f
 * Install Ghostscript. By default the installer uses a folder like `C:\Program Files\gs\gs10.08.0`.
 
 * Set the environment variable **GS4JS_HOME** to the `bin` folder of your Ghostscript installation, which contains
-  `gsdll64.dll` and `gsdll64.lib`, for example `C:\Program Files\gs\gs10.08.0\bin`. It is not needed when Ghostscript
-  is installed in `C:\gs`, because `C:\gs\bin` is the default.
+  `gsdll64.dll` and `gsdll64.lib`, for example `C:\Program Files\gs\gs10.08.0\bin`.
 
-During the build the Ghostscript DLL is copied next to the addon, so it is found at runtime without changing `PATH`.
+The Windows installer does not include the headers of the API, so the ones of the package are used. During the build
+the Ghostscript DLL is copied next to the addon, so it is found at runtime without changing `PATH`.
 
-### macOS
+When npm did not install the libgs package, the prebuilt binary uses the DLL of the Ghostscript installed in
+`C:gsin`, if there is one.
+
+#### macOS
 
 * Install Homebrew following the [official guide](https://brew.sh/).
 
@@ -142,14 +181,17 @@ During the build the Ghostscript DLL is copied next to the addon, so it is found
 brew install ghostscript
 ```
 
-The library is found automatically in `/usr/local/lib` or in the Homebrew installation of Ghostscript. If it is installed
-elsewhere, set **GS4JS_HOME** to the folder containing `libgs.dylib`, for example:
+* Set **GS4JS_HOME** to the folder containing `libgs.dylib` and **GS4JS_INCLUDE** to the folder containing `iapi.h`:
 
 ```bash
 export GS4JS_HOME="$(brew --prefix ghostscript)/lib"
+export GS4JS_INCLUDE="$(brew --prefix ghostscript)/include/ghostscript"
 ```
 
-### Official Ghostscript installation guide
+When **GS4JS_HOME** is not set, the library is searched in `/usr/local/lib` and in the Homebrew installation of
+Ghostscript.
+
+#### Official Ghostscript installation guide
 
 * [Installation from official documentation](https://ghostscript.readthedocs.io/en/latest/Install.html)
 
@@ -163,31 +205,31 @@ export GS4JS_HOME="$(brew --prefix ghostscript)/lib"
 npm install ghostscript4js
 ```
 
-Ghostscript must be installed first. The installation uses a prebuilt binary when one is available for the platform,
-and otherwise builds the addon from source.
+npm installs the libgs package of the platform. The installation then uses a prebuilt binary of the addon when one is
+available for the platform, and otherwise builds the addon from source.
 
 <a name="prebuilt"></a>
 
 ### Prebuilt binaries
 
-Each release includes prebuilt binaries of the addon. During the installation the binary for the current platform is
-downloaded from the [GitHub release](https://github.com/NickNaso/ghostscript4js/releases) of the installed version and
-loaded once to check that it works with the installed Ghostscript. The binaries contain only the addon: Ghostscript is
-not included.
+Each release includes prebuilt binaries of the addon, built with libgs. During the installation the binary for the
+current platform is downloaded from the [GitHub release](https://github.com/NickNaso/ghostscript4js/releases) of the
+installed version and loaded once to check that it works. Ghostscript does not need to be installed on the system.
 
 | Platform | Requirements |
 | --- | --- |
-| Linux x64 and arm64 with glibc | glibc 2.28 or later and the Ghostscript 10 library (`libgs.so.10`) |
-| Linux x64 and arm64 with musl, such as Alpine | the Ghostscript 10 library (`libgs.so.10`) |
-| macOS x64 and arm64 | macOS 13 or later and `libgs.dylib` in `/opt/homebrew/lib`, `/usr/local/lib` or `/opt/local/lib`, as installed by Homebrew or MacPorts |
-| Windows x64 | `gsdll64.dll` in the **GS4JS_HOME** folder (`C:/gs/bin` by default), which is copied next to the addon |
+| Linux x64 and arm64 with glibc | glibc 2.28 or later |
+| Linux x64 and arm64 with musl, such as Alpine | none |
+| macOS x64 and arm64 | macOS 13.5 or later |
+| Windows x64 | none: the DLL of the libgs package is copied next to the addon |
 
 The addon is built from source, as described in [Prerequisites](#prerequisites), when:
 
 * there is no binary for the platform, or it cannot be downloaded;
-* the binary cannot be loaded, for example because Ghostscript is not installed or, on Linux, its version is 9;
+* the binary cannot be loaded;
 * **GS4JS_BUILD_FROM_SOURCE** or npm's `--build-from-source` option is set;
-* **GS4JS_LIB** or **GS4JS_DLL** is set, because they choose the library to link;
+* **GS4JS_HOME**, **GS4JS_LIB**, **GS4JS_DLL** or **GS4JS_INCLUDE** is set, to use the
+  [Ghostscript installed on the system](#system);
 * the package is installed from a clone of the repository.
 
 Run `npm install --foreground-scripts` to see whether the prebuilt binary was used and, if not, why.
@@ -196,15 +238,19 @@ Run `npm install --foreground-scripts` to see whether the prebuilt binary was us
 
 ## Installation options
 
-The following options change how the addon is installed and where the Ghostscript library is searched during the build.
-Each option can be passed to `npm install` or set as an environment variable with the same name; the environment
-variable is used when both are set.
+The following options change how the addon is installed and which Ghostscript it is built with. Each option can be
+passed to `npm install` or set as an environment variable with the same name; the environment variable is used when
+both are set.
+
+Setting any of **GS4JS_HOME**, **GS4JS_LIB**, **GS4JS_DLL** and **GS4JS_INCLUDE** builds the addon with the
+[Ghostscript installed on the system](#system) instead of libgs; the options that are not set take their default.
 
 | Option | Description | Default |
 | --- | --- | --- |
-| **GS4JS_HOME** | Folder containing the Ghostscript library | Linux: `/usr/lib/x86_64-linux-gnu`<br>Windows: `C:/gs/bin`<br>macOS: detected automatically |
-| **GS4JS_LIB** | File name of the Ghostscript library | Linux: `libgs.so`<br>Windows: `gsdll64.lib` (`gsdll32.lib` on 32-bit)<br>macOS: `libgs.dylib` |
-| **GS4JS_DLL** | File name of the Ghostscript DLL, only on Windows | `gsdll64.dll` (`gsdll32.dll` on 32-bit) |
+| **GS4JS_HOME** | Folder containing the Ghostscript library of the system | Linux: `/usr/lib/x86_64-linux-gnu`<br>Windows: `C:/gs/bin`<br>macOS: detected automatically |
+| **GS4JS_LIB** | File name of the Ghostscript library of the system | Linux: `libgs.so`<br>Windows: `gsdll64.lib` (`gsdll32.lib` on 32-bit)<br>macOS: `libgs.dylib` |
+| **GS4JS_DLL** | File name of the Ghostscript DLL of the system, only on Windows | `gsdll64.dll` (`gsdll32.dll` on 32-bit) |
+| **GS4JS_INCLUDE** | Folder containing the headers of the Ghostscript API of the system (`iapi.h`) | the headers contained in the package |
 | **GS4JS_BUILD_FROM_SOURCE** | Build the addon from source instead of downloading the prebuilt binary | not set |
 | **GS4JS_BINARY_HOST** | URL the prebuilt binaries are downloaded from, for example a mirror of the GitHub releases. The binary is downloaded from `<GS4JS_BINARY_HOST>/<version>/ghostscript4js-<version>-<platform>.node.gz` | `https://github.com/NickNaso/ghostscript4js/releases/download` |
 
@@ -215,7 +261,7 @@ npm install ghostscript4js --GS4JS_HOME="C:/Program Files/gs/gs10.08.0/bin"
 ```
 
 ```console
-GS4JS_HOME=/usr/lib64 npm install ghostscript4js
+GS4JS_HOME=/usr/lib64 GS4JS_INCLUDE=/usr/include/ghostscript npm install ghostscript4js
 ```
 
 <a name="usage"></a>
@@ -412,20 +458,33 @@ option when you process files you do not control.
 
 ## Development
 
-Clone the repository, install Ghostscript as described in [Prerequisites](#prerequisites) and run:
+Clone the repository and run:
 
 ```console
-npm install    # installs the dependencies and builds the addon with Marmotta, never using a prebuilt binary
+npm install    # installs the dependencies, libgs included, and builds the addon with Marmotta, never using a prebuilt binary
 npm test       # runs the test suite
 npm run debug  # rebuilds the addon without optimizations and with debug information
 ```
 
 The build is described in `marmotta.config.js`, and the addon is written to `build/Release/ghostscript4js.node`.
-You can also call Marmotta directly, for example `npx marmotta rebuild`. See the
+`libgs.js` chooses between libgs and the [Ghostscript installed on the system](#system) and finds the libgs package of
+the platform. You can also call Marmotta directly, for example `npx marmotta rebuild`. See the
 [Marmotta documentation](https://github.com/napi-bindings/marmotta#readme) for all commands and options, such as
 `MARMOTTA_HOME` to change where Zig and the temporary build files are stored.
 
-Every pull request and every push to `master` are built and tested on Linux, macOS and Windows. When a release is
+To cross-compile with `npx marmotta build --target <zig target>`, the libgs package of the target must be installed,
+for example `@libgs/linux-arm64` for `--target aarch64-linux-gnu`. npm installs only the package of the running
+system, so install the other one with `npm install --no-save --force @libgs/<platform>@<version>`, using the version
+in the `optionalDependencies` of `package.json`. The Zig target `arm` is used for both armv6 and armv7: the armv7
+package is chosen unless the environment variable **GS4JS_ARM_VERSION** is set to `6`, for example
+`GS4JS_ARM_VERSION=6 npx marmotta build --target arm-linux-gnueabihf` with `@libgs/linux-armv6` installed.
+
+The version of libgs is set in the `optionalDependencies` of `package.json`, with the same version for all the
+packages. To update Ghostscript, change it for every `@libgs/*` package and update `MAX_SUPPORTED_REVISION` in
+`lib/ghostscript4js.js` when the Ghostscript version changes.
+
+Every pull request and every push to `master` are built and tested with libgs on Linux, macOS and Windows, and with
+the Ghostscript installed on the system on one runner of each operating system. When a release is
 published, the `Release` workflow builds the [prebuilt binaries](#prebuilt), attaches them to the release as
 `ghostscript4js-<version>-<platform>.node.gz` and then installs the package on each platform to check that they are
 downloaded and loaded. The release tag must be the version in `package.json`, for example `3.3.0`, because the
@@ -437,14 +496,23 @@ the binaries without a release.
 
 ## Troubleshooting
 
-* **`Ghostscript library not found`** during the installation: the library is not in the folder used for the build.
-  Set **GS4JS_HOME** (and **GS4JS_LIB** if the file name is different) as described in [Installation options](#installoptions).
+* **`@libgs/<platform> is not installed, using the Ghostscript installed on the system`** during the installation: npm
+  did not install libgs, because the optional dependencies were disabled or there is no libgs package for the platform
+  (see [Supported platforms](#platforms)). Install without `--omit=optional`, or install Ghostscript on the system as
+  described in [Use the Ghostscript installed on the system](#system).
 
-* **The addon cannot be loaded on Linux** with an error about `libgs.so`: the Ghostscript shared library is not installed
-  or not in the library search path. Install the Ghostscript library package of your distribution.
+* **`Ghostscript library not found`** during the installation: the addon is built with the Ghostscript installed on the
+  system and the library is not in the folder used for the build. Set **GS4JS_HOME** (and **GS4JS_LIB** if the file name
+  is different) as described in [Installation options](#installoptions), or unset all the **GS4JS_HOME**,
+  **GS4JS_LIB**, **GS4JS_DLL** and **GS4JS_INCLUDE** options to use libgs.
 
-* **The addon cannot be loaded on Windows**: check that the Ghostscript DLL is in the `build/Release` folder of the module.
-  The DLL also needs the Microsoft Visual C++ Redistributable, which is installed together with Ghostscript.
+* **The addon cannot be loaded on Linux** with an error about `libgs.so`: the addon is built with the Ghostscript
+  installed on the system, and its shared library is not installed or not in the library search path. Install the
+  Ghostscript library package of your distribution.
+
+* **The addon cannot be loaded on Windows**: check that the Ghostscript DLL (`gsdll64.dll`) is in the `build/Release`
+  folder of the module. The DLL also needs the Microsoft Visual C++ Redistributable, which is installed together with
+  Ghostscript and with most Windows applications.
 
 * **A damaged PDF file is processed without errors**: Ghostscript repairs the file and completes successfully.
   Pass `-dPDFSTOPONERROR` or `-dPDFSTOPONWARNING` to get an error instead, as described in [Damaged PDF files](#damaged-pdf-files).
@@ -459,6 +527,7 @@ the binaries without a release.
 ## Docker
 
 Check out the example `Dockerfile` in `examples/docker`. It creates an image based on Node.js 24 and Debian bookworm.
+Ghostscript is installed by npm from libgs, so the image does not need the Ghostscript packages of Debian.
 
 To build the image do:
 
@@ -478,9 +547,9 @@ Running the container should output something like:
 ```js
 {
   product: 'GPL Ghostscript',
-  copyright: 'Copyright (C) 2022 Artifex Software, Inc.  All rights reserved.',
-  revision: 10000,
-  revisiondate: 20220921
+  copyright: 'Copyright (C) 2026 Artifex Software, Inc.  All rights reserved.',
+  revision: 10080,
+  revisiondate: 20260908
 }
 ```
 
@@ -488,7 +557,6 @@ If you want to look around in the container you can get a shell like:
 
 ```console
 docker run -it ghostscript4js /bin/bash
-gs --version
 ```
 
 <a name="team"></a>

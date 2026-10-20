@@ -62,6 +62,27 @@
     "marmotta": "^0.6.0",
     "node-addon-api": "^8.9.2"
   },
+  "optionalDependencies": {
+    "@libgs/darwin-aarch64": "0.17.0",
+    "@libgs/darwin-x64": "0.17.0",
+    "@libgs/freebsd-x64": "0.17.0",
+    "@libgs/linux-arm64": "0.17.0",
+    "@libgs/linux-armv6": "0.17.0",
+    "@libgs/linux-armv7": "0.17.0",
+    "@libgs/linux-ia32": "0.17.0",
+    "@libgs/linux-loong64": "0.17.0",
+    "@libgs/linux-musl-arm64": "0.17.0",
+    "@libgs/linux-musl-armv6": "0.17.0",
+    "@libgs/linux-musl-armv7": "0.17.0",
+    "@libgs/linux-musl-x64": "0.17.0",
+    "@libgs/linux-ppc64": "0.17.0",
+    "@libgs/linux-riscv64": "0.17.0",
+    "@libgs/linux-s390x": "0.17.0",
+    "@libgs/linux-x64": "0.17.0",
+    "@libgs/win32-arm64": "0.17.0",
+    "@libgs/win32-x64": "0.17.0",
+    "@libgs/win32-x86": "0.17.0"
+  },
   "devDependencies": {
     "jasmine": "^3.5.0"
   },
@@ -73,6 +94,7 @@
     "CODE_OF_CONDUCT.md",
     "index.js",
     "install.js",
+    "libgs.js",
     "marmotta.config.js",
     "macOS-lib-path-finder.js",
     "lib/",

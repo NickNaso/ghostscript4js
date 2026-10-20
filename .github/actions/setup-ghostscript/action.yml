@@ -1,5 +1,7 @@
 name: Setup Ghostscript
-description: Install Ghostscript and set GS4JS_HOME to the folder containing its library
+description: >
+  Install Ghostscript on the system and set GS4JS_HOME to the folder containing
+  its library and, when the headers are installed, GS4JS_INCLUDE to their folder
 
 inputs:
   windows-release:
@@ -16,6 +18,7 @@ runs:
         sudo apt-get update
         sudo apt-get install --yes --no-install-recommends ghostscript libgs-dev
         echo "GS4JS_HOME=/usr/lib/$(uname -m)-linux-gnu" >> "$GITHUB_ENV"
+        echo "GS4JS_INCLUDE=/usr/include/ghostscript" >> "$GITHUB_ENV"
 
     - name: Install Ghostscript (macOS)
       if: runner.os == 'macOS'
@@ -23,8 +26,10 @@ runs:
       run: |
         brew install ghostscript
         echo "GS4JS_HOME=$(brew --prefix ghostscript)/lib" >> "$GITHUB_ENV"
+        echo "GS4JS_INCLUDE=$(brew --prefix ghostscript)/include/ghostscript" >> "$GITHUB_ENV"
 
-    # The installer is extracted instead of executed, so no elevation is needed
+    # The installer is extracted instead of executed, so no elevation is needed.
+    # It contains no headers, so the addon uses the ones of the libgs package.
     - name: Install Ghostscript (Windows)
       if: runner.os == 'Windows'
       shell: pwsh

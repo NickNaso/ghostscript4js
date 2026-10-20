@@ -1,0 +1,10 @@
+/* Symbols exported by the addon built with libgs on Linux and FreeBSD. The
+ * symbols of Ghostscript, of the libraries it contains and of the C++ runtime
+ * stay local, so they cannot clash with the ones of Node.js or other addons. */
+{
+    global:
+        napi_register_module_v1;
+        node_api_module_get_api_version_v1;
+    local:
+        *;
+};
