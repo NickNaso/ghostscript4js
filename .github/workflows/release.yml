@@ -1,8 +1,10 @@
 name: Release
 
-# Builds the addon for each platform of libgs and attaches it to the release,
-# where install.js downloads it from. Run the workflow manually to build and
-# test the binaries without a release.
+# Builds the addon for each platform of libgs into the package of the platform,
+# in npm/<platform>, and publishes these packages and ghostscript4js to npm,
+# which installs the package of the platform as an optional dependency. Run the
+# workflow manually to build and test the addons, and pack the packages,
+# without a release.
 
 on:
   release:
@@ -14,7 +16,7 @@ permissions:
   contents: read
 
 jobs:
-  # The platforms with a GitHub runner, where the binaries are tested natively
+  # The platforms with a GitHub runner, where the addons are tested natively
   build:
     name: Build ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
@@ -22,10 +24,11 @@ jobs:
       # Every platform is built, so a manual run reports all the failures
       fail-fast: false
       matrix:
-        # platform must match the name computed by install.js. An explicit Zig
-        # target builds for the baseline CPU of the architecture instead of the
-        # CPU of the runner, and on Linux for glibc 2.28 instead of the glibc of
-        # the runner, so the binaries also run on older systems.
+        # platform must match the name computed by prebuilt.js, which is the
+        # folder of its package in npm/. An explicit Zig target builds for the
+        # baseline CPU of the architecture instead of the CPU of the runner,
+        # and on Linux for glibc 2.28 instead of the glibc of the runner, so the
+        # addons also run on older systems.
         include:
           - os: ubuntu-24.04
             platform: linux-x64
@@ -65,7 +68,7 @@ jobs:
         if: github.event_name == 'release'
         env:
           TAG: ${{ github.event.release.tag_name }}
-        # install.js downloads the binary from the release tagged with the package version
+        # The release publishes the version of package.json
         run: test "$TAG" = "$(node -p "require('./package.json').version")"
       # Installs the libgs package of the platform built: the one of the runner
       # or, with npm-platform, the one of the os, cpu and libc it sets. npm does
@@ -89,20 +92,21 @@ jobs:
       - run: npm test
 
       # On Linux and macOS the addon contains Ghostscript. On Windows it loads
-      # the DLL of the libgs package, which install.js copies next to it.
+      # the DLL of libgs from its own folder, so the DLL, which the build copies
+      # next to the addon, is in the package too.
       - name: Package
         run: |
-          archive="ghostscript4js-$(node -p "require('./package.json').version")-${{ matrix.platform }}.node.gz"
-          mkdir dist
-          gzip -9 -c build/Release/ghostscript4js.node > "dist/$archive"
-          echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
+          shopt -s nullglob
+          cp build/Release/ghostscript4js.node build/Release/*.dll npm/${{ matrix.platform }}/
       - uses: actions/upload-artifact@v7
         with:
-          path: dist/${{ env.ARCHIVE }}
-          archive: false
+          name: ${{ matrix.platform }}
+          path: |
+            npm/${{ matrix.platform }}/ghostscript4js.node
+            npm/${{ matrix.platform }}/*.dll
           if-no-files-found: error
 
-  # The musl binaries are built in Alpine Linux containers
+  # The musl addons are built in Alpine Linux containers
   build-musl:
     name: Build ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
@@ -123,28 +127,26 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: test "$TAG" = "$(node -p "require('./package.json').version")"
-      - name: Set the archive name
-        run: echo "ARCHIVE=ghostscript4js-$(node -p "require('./package.json').version")-${{ matrix.platform }}.node.gz" >> "$GITHUB_ENV"
       # npm runs scripts as the owner of the project folder, so the build runs
       # in a copy owned by the root user of the container. npm installs the
       # musl libgs package of the container.
       - name: Build and test
         env:
           TARGET: ${{ matrix.target }}
+          PLATFORM: ${{ matrix.platform }}
         run: |
-          mkdir dist
-          docker run --rm -v "$PWD:/src" -e TARGET -e ARCHIVE node:24-alpine sh -euc '
+          docker run --rm -v "$PWD:/src" -e TARGET -e PLATFORM node:24-alpine sh -euc '
             apk add --no-cache tar xz
             cp -r /src /build
             cd /build
             npm install --ignore-scripts
             npx marmotta build --target "$TARGET"
             npm test
-            gzip -9 -c build/Release/ghostscript4js.node > "/src/dist/$ARCHIVE"'
+            cp build/Release/ghostscript4js.node "/src/npm/$PLATFORM/"'
       - uses: actions/upload-artifact@v7
         with:
-          path: dist/${{ env.ARCHIVE }}
-          archive: false
+          name: ${{ matrix.platform }}
+          path: npm/${{ matrix.platform }}/ghostscript4js.node
           if-no-files-found: error
 
   # The platforms without a GitHub runner are cross-compiled with Zig, with the
@@ -156,7 +158,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # machine is the architecture of the binary printed by readelf. The
+        # machine is the architecture of the addon printed by readelf. The
         # Debian images get the Node.js of Debian, which is version 20.
         include:
           - platform: linux-ia32
@@ -274,47 +276,96 @@ jobs:
             node node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json
 
       - name: Package
-        run: |
-          archive="ghostscript4js-$(node -p "require('./package.json').version")-${{ matrix.platform }}.node.gz"
-          mkdir dist
-          gzip -9 -c build/Release/ghostscript4js.node > "dist/$archive"
-          echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
+        run: cp build/Release/ghostscript4js.node npm/${{ matrix.platform }}/
       - uses: actions/upload-artifact@v7
         with:
-          path: dist/${{ env.ARCHIVE }}
-          archive: false
+          name: ${{ matrix.platform }}
+          path: npm/${{ matrix.platform }}/ghostscript4js.node
           if-no-files-found: error
 
-  upload:
-    name: Attach the binaries to the release
+  # Publishes the packages of the platforms and then ghostscript4js, so its
+  # optional dependencies can be installed as soon as it is published. They are
+  # published with the next tag: the latest tag is moved to them by the promote
+  # job, after the verify job has installed them on each platform. A package
+  # that is already published is skipped, so the job can be run again after a
+  # failure. A manual run only packs the packages, to show their content.
+  publish:
+    name: Publish to npm
     needs:
       - build
       - build-musl
       - build-cross
-    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      # Signs the provenance of the packages
+      id-token: write
     steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      # Each artifact is named after its platform, so it is extracted to the
+      # folder of the package of the platform
       - uses: actions/download-artifact@v8
         with:
-          path: dist
-          merge-multiple: true
-      - env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber dist/*.node.gz
+          path: npm
+      # npm publishes a package even when the files listed in its package.json are missing
+      - name: Check the packages
+        run: |
+          node npm/version.js --check
+          for dir in ./npm/*/; do
+            for file in $(node -p "require('${dir}package.json').files.join(' ')"); do
+              test -f "$dir$file" || { echo "::error::$dir$file is missing"; exit 1; }
+            done
+          done
+      - name: Pack
+        if: github.event_name != 'release'
+        run: |
+          for dir in ./npm/*/; do
+            npm pack --dry-run "$dir"
+          done
+          npm pack --dry-run
+      - name: Publish
+        if: github.event_name == 'release'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          publish() {
+            name=$(node -p "require('$1/package.json').name")
+            if npm view "$name@$version" version > /dev/null 2>&1; then
+              echo "$name@$version is already published"
+            else
+              npm publish "$1" --tag next --access public --provenance
+            fi
+          }
+          for dir in ./npm/*/; do
+            publish "$dir"
+          done
+          publish .
+          # The verify job installs the packages as soon as this job ends
+          for i in $(seq 30); do
+            npm view "ghostscript4js@$version" version > /dev/null 2>&1 && exit 0
+            sleep 10
+          done
+          echo "::error::ghostscript4js@$version is not available on npm"
+          exit 1
 
-  # Installs the package as a user would, with the oldest supported Node.js
-  # version and without Ghostscript on the system. The build from source is
-  # disabled by pointing Marmotta to a Zig installation that does not exist, so
-  # the installation fails unless the binary attached to the release is
-  # downloaded and loaded. linux-armv6 is not checked, because the Node.js of
-  # the armv7 containers that run it downloads the armv7 binary, and
-  # linux-loong64 has no container.
+  # Installs the published package from npm as a user would, with the oldest
+  # supported Node.js version and without Ghostscript on the system. The build
+  # from source is disabled by pointing Marmotta to a Zig installation that
+  # does not exist, so the installation fails unless npm installs the package
+  # of the platform and its addon is loaded. npm 12 and later do not run the
+  # install script of ghostscript4js, which is not allowed, so the addon is
+  # loaded without it. linux-armv6 is not checked, because the Node.js of the
+  # armv7 containers that run it loads the armv7 addon, and linux-loong64 has
+  # no container.
   verify:
     name: Install on ${{ matrix.platform }}
-    needs: upload
+    needs: publish
+    if: github.event_name == 'release'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -381,31 +432,22 @@ jobs:
       run:
         shell: bash
     env:
+      VERSION: ${{ github.event.release.tag_name }}
       SMOKE_TEST: |
         const gs = require('ghostscript4js')
         console.log(gs.version())
         gs.executeSync('-q -dNODISPLAY -dNOPAUSE -dBATCH -c quit')
-      # Installs the package in the current folder from the tarball $1, with
-      # sh -euc "$INSTALL" sh <tarball>
+      # Installs the version $1 of the package in the current folder, with
+      # sh -euc "$INSTALL" sh <version>
       INSTALL: |
         npm init --yes > /dev/null
-        npm install --foreground-scripts "$1"
-        # npm 12 and later skip the install script of the package until it is
-        # approved, as a user does after the warning of npm
-        if [ "$(npm --version | cut -d. -f1)" -ge 12 ]; then
-          npm install-scripts approve ghostscript4js
-          npm rebuild --foreground-scripts ghostscript4js
-        fi
+        npm install --foreground-scripts "ghostscript4js@$1"
         node -e "$SMOKE_TEST"
     steps:
-      - uses: actions/checkout@v7
-        with:
-          path: source
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node || 20 }}
           architecture: ${{ matrix.node-arch }}
-      - run: npm pack ./source
 
       - name: Set up QEMU
         if: matrix.docker-platform
@@ -415,14 +457,14 @@ jobs:
         env:
           DOCKER_PLATFORM: ${{ matrix.docker-platform }}
         run: |
-          docker run --rm ${DOCKER_PLATFORM:+--platform "$DOCKER_PLATFORM"} -v "$PWD:/work:ro" -e SMOKE_TEST -e INSTALL -e MARMOTTA_ZIG_DIR=/no-zig ${{ matrix.image }} sh -euc '
+          docker run --rm ${DOCKER_PLATFORM:+--platform "$DOCKER_PLATFORM"} -e VERSION -e SMOKE_TEST -e INSTALL -e MARMOTTA_ZIG_DIR=/no-zig ${{ matrix.image }} sh -euc '
             command -v npm > /dev/null || {
               apt-get update -qq
               apt-get install -y -qq --no-install-recommends nodejs npm > /dev/null
             }
             mkdir /app
             cd /app
-            sh -euc "$INSTALL" sh /work/ghostscript4js-*.tgz'
+            sh -euc "$INSTALL" sh "$VERSION"'
 
       - name: Install on FreeBSD
         if: matrix.vm == 'freebsd'
@@ -430,14 +472,13 @@ jobs:
         with:
           usesh: true
           copyback: false
-          envs: SMOKE_TEST INSTALL
+          envs: VERSION SMOKE_TEST INSTALL
           prepare: pkg install -y node22 npm-node22
           run: |
             export MARMOTTA_ZIG_DIR=/no-zig
-            work="$PWD"
             mkdir /tmp/app
             cd /tmp/app
-            sh -euc "$INSTALL" sh "$work"/ghostscript4js-*.tgz
+            sh -euc "$INSTALL" sh "$VERSION"
 
       - name: Install
         if: runner.os != 'Linux'
@@ -446,4 +487,24 @@ jobs:
         run: |
           mkdir app
           cd app
-          sh -euc "$INSTALL" sh ../ghostscript4js-*.tgz
+          sh -euc "$INSTALL" sh "$VERSION"
+
+  # Moves the latest tag to the packages installed on every platform
+  promote:
+    name: Tag the packages as latest
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          for dir in ./npm/*/; do
+            npm dist-tag add "$(node -p "require('${dir}package.json').name")@$version" latest
+          done
+          npm dist-tag add "ghostscript4js@$version" latest

@@ -1,0 +1,25 @@
+{
+  "name": "@ghostscript4js/darwin-arm64",
+  "version": "4.0.0",
+  "description": "The prebuilt ghostscript4js addon for macOS arm64",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NickNaso/ghostscript4js.git",
+    "directory": "npm/darwin-arm64"
+  },
+  "main": "ghostscript4js.node",
+  "files": [
+    "ghostscript4js.node"
+  ],
+  "preferUnplugged": true,
+  "engines": {
+    "node": ">= 20.0.0"
+  },
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ]
+}
