@@ -20,14 +20,15 @@
 #ifndef GHOSTSCRIPT4JS_H
 #define GHOSTSCRIPT4JS_H
 
-#if defined(_WIN32) && !defined(_Windows)
-#define _Windows
-#endif
-#ifdef _Windows
-//#define _WINSOCKAPI_ 
-//#include <windows.h>
+// _Windows is not defined, because then the iapi.h of Ghostscript 10 removes
+// GSDLLAPI with MinGW, the ABI of Zig. The build defines it as __stdcall on
+// Windows x86, as the Ghostscript DLLs. iapi.h is included first, before a
+// header that includes windows.h, which also makes it define _Windows.
+#ifdef _WIN32
 #define GSDLLEXPORT __declspec(dllimport)
 #endif
+
+#include <iapi.h>
 
 #include <sstream>
 #include <string>
@@ -35,8 +36,6 @@
 #include <exception>
 
 #include <napi.h>
-
-#include <iapi.h>
 
 // gserrors.h is not bundled with the package, and the code is the same in all
 // the supported versions of Ghostscript

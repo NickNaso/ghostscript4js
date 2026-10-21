@@ -48,9 +48,11 @@ function buildFromSource() {
 }
 
 // The platform in the name of the release assets, for example linux-x64,
-// linux-x64-musl, darwin-arm64 or win32-x64
+// linux-x64-musl, darwin-arm64 or win32-x64. The 32-bit ARM binaries are
+// different for armv6 and armv7, as the libgs libraries.
 function platform() {
-    return `${process.platform}-${process.arch}${isMusl() ? '-musl' : ''}`
+    const arch = process.arch === 'arm' ? `armv${process.config.variables.arm_version}` : process.arch
+    return `${process.platform}-${arch}${isMusl() ? '-musl' : ''}`
 }
 
 async function download(url) {

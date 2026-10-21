@@ -1,6 +1,6 @@
 name: Release
 
-# Builds the addon for each platform with libgs and attaches it to the release,
+# Builds the addon for each platform of libgs and attaches it to the release,
 # where install.js downloads it from. Run the workflow manually to build and
 # test the binaries without a release.
 
@@ -14,6 +14,7 @@ permissions:
   contents: read
 
 jobs:
+  # The platforms with a GitHub runner, where the binaries are tested natively
   build:
     name: Build ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
@@ -41,6 +42,17 @@ jobs:
           - os: windows-latest
             platform: win32-x64
             target: x86_64-windows
+          - os: windows-11-arm
+            platform: win32-arm64
+            target: aarch64-windows
+          # Built with the x64 Node.js and Zig of the runner, and tested with
+          # Node.js 22, the last version with binaries for Windows x86
+          - os: windows-latest
+            platform: win32-ia32
+            target: x86-windows
+            package: '@libgs/win32-x86'
+            test-node: 22
+            test-arch: x86
     defaults:
       run:
         shell: bash
@@ -57,6 +69,11 @@ jobs:
         run: test "$TAG" = "$(node -p "require('./package.json').version")"
       # Installs the libgs package of the runner, which is the platform built
       - run: npm install --ignore-scripts
+      - name: Install ${{ matrix.package }}
+        if: matrix.package
+        env:
+          PACKAGE: ${{ matrix.package }}
+        run: npm install --no-save --force --ignore-scripts "$PACKAGE@$(node -p "require('./package.json').optionalDependencies[process.env.PACKAGE]")"
       - name: Build
         if: runner.os != 'Windows'
         run: npx marmotta build --target ${{ matrix.target }}
@@ -67,6 +84,11 @@ jobs:
         shell: pwsh
         run: npx marmotta build --target ${{ matrix.target }}
 
+      - uses: actions/setup-node@v7
+        if: matrix.test-node
+        with:
+          node-version: ${{ matrix.test-node }}
+          architecture: ${{ matrix.test-arch }}
       - run: npm test
 
       # On Linux and macOS the addon contains Ghostscript. On Windows it loads
@@ -128,11 +150,153 @@ jobs:
           archive: false
           if-no-files-found: error
 
+  # The platforms without a GitHub runner are cross-compiled with Zig, with the
+  # targets and the glibc versions of the libgs libraries, and tested with QEMU
+  # in a container, or in a virtual machine on FreeBSD
+  build-cross:
+    name: Build ${{ matrix.platform }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # machine is the architecture of the binary printed by readelf. The
+        # Debian images get the Node.js of Debian, which is version 20.
+        include:
+          - platform: linux-ia32
+            target: x86-linux-gnu.2.17
+            package: '@libgs/linux-ia32'
+            machine: Intel 80386
+            docker-platform: linux/386
+            image: debian:trixie-slim
+          # Zig has a single arm architecture, so the version of the libgs
+          # library, which also sets the CPU, is chosen with GS4JS_ARM_VERSION.
+          # Debian has no armv6 port, but its armv7 one runs armv6 code.
+          - platform: linux-armv6
+            target: arm-linux-gnueabihf.2.28
+            arm-version: 6
+            package: '@libgs/linux-armv6'
+            machine: ARM
+            docker-platform: linux/arm/v7
+            image: debian:trixie-slim
+          - platform: linux-armv7
+            target: arm-linux-gnueabihf.2.28
+            arm-version: 7
+            package: '@libgs/linux-armv7'
+            machine: ARM
+            docker-platform: linux/arm/v7
+            image: debian:trixie-slim
+          - platform: linux-ppc64
+            target: powerpc64le-linux-gnu.2.28
+            package: '@libgs/linux-ppc64'
+            machine: PowerPC64
+            docker-platform: linux/ppc64le
+            image: node:24-trixie-slim
+          - platform: linux-s390x
+            target: s390x-linux-gnu.2.28
+            package: '@libgs/linux-s390x'
+            machine: IBM S/390
+            docker-platform: linux/s390x
+            image: node:24-trixie-slim
+          - platform: linux-riscv64
+            target: riscv64-linux-gnu.2.28
+            package: '@libgs/linux-riscv64'
+            machine: RISC-V
+            docker-platform: linux/riscv64
+            image: debian:trixie-slim
+          # There is no official loong64 image to run the tests
+          - platform: linux-loong64
+            target: loongarch64-linux-gnu.2.36
+            package: '@libgs/linux-loong64'
+            machine: LoongArch
+          - platform: linux-armv6-musl
+            target: arm-linux-musleabihf
+            arm-version: 6
+            package: '@libgs/linux-musl-armv6'
+            machine: ARM
+            docker-platform: linux/arm/v6
+            image: node:22-alpine
+          - platform: linux-armv7-musl
+            target: arm-linux-musleabihf
+            arm-version: 7
+            package: '@libgs/linux-musl-armv7'
+            machine: ARM
+            docker-platform: linux/arm/v7
+            image: node:22-alpine
+          - platform: freebsd-x64
+            target: x86_64-freebsd
+            package: '@libgs/freebsd-x64'
+            machine: Advanced Micro Devices X86-64
+            vm: freebsd
+    env:
+      GS4JS_ARM_VERSION: ${{ matrix.arm-version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Check the release tag
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: test "$TAG" = "$(node -p "require('./package.json').version")"
+      - run: npm install --ignore-scripts
+      - name: Install ${{ matrix.package }}
+        env:
+          PACKAGE: ${{ matrix.package }}
+        run: npm install --no-save --force --ignore-scripts "$PACKAGE@$(node -p "require('./package.json').optionalDependencies[process.env.PACKAGE]")"
+      - name: Build
+        run: npx marmotta build --target ${{ matrix.target }}
+      - name: Check the architecture
+        run: |
+          readelf -h build/Release/ghostscript4js.node
+          test "$(readelf -h build/Release/ghostscript4js.node | sed -n 's/^ *Machine: *//p')" = "${{ matrix.machine }}"
+
+      # Only the test dependencies are needed, and the libgs packages are large
+      - run: rm -rf node_modules/@libgs
+      - name: Set up QEMU
+        if: matrix.image
+        uses: docker/setup-qemu-action@v3
+      - name: Test on ${{ matrix.image }} (${{ matrix.docker-platform }})
+        if: matrix.image
+        run: |
+          docker run --rm --platform ${{ matrix.docker-platform }} -v "$PWD:/src" -w /src ${{ matrix.image }} sh -euc '
+            command -v node > /dev/null || {
+              apt-get update -qq
+              apt-get install -y -qq --no-install-recommends nodejs > /dev/null
+            }
+            uname -m
+            node --version
+            node node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json'
+      - name: Test on FreeBSD
+        if: matrix.vm == 'freebsd'
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          copyback: false
+          prepare: pkg install -y node22
+          run: |
+            uname -a
+            node --version
+            node node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json
+
+      - name: Package
+        run: |
+          archive="ghostscript4js-$(node -p "require('./package.json').version")-${{ matrix.platform }}.node.gz"
+          mkdir dist
+          gzip -9 -c build/Release/ghostscript4js.node > "dist/$archive"
+          echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v7
+        with:
+          path: dist/${{ env.ARCHIVE }}
+          archive: false
+          if-no-files-found: error
+
   upload:
     name: Attach the binaries to the release
     needs:
       - build
       - build-musl
+      - build-cross
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
@@ -151,7 +315,9 @@ jobs:
   # version and without Ghostscript on the system. The build from source is
   # disabled by pointing Marmotta to a Zig installation that does not exist, so
   # the installation fails unless the binary attached to the release is
-  # downloaded and loaded.
+  # downloaded and loaded. linux-armv6 is not checked, because the Node.js of
+  # the armv7 containers that run it downloads the armv7 binary, and
+  # linux-loong64 has no container.
   verify:
     name: Install on ${{ matrix.platform }}
     needs: upload
@@ -159,7 +325,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Linux is tested in containers, without the libraries of the runner
+        # Linux is tested in containers, without the libraries of the runner.
+        # The Debian images get Node.js 20 and npm from Debian.
         include:
           - os: ubuntu-24.04
             platform: linux-x64
@@ -168,17 +335,54 @@ jobs:
             platform: linux-arm64
             image: node:20-bookworm
           - os: ubuntu-24.04
+            platform: linux-ia32
+            image: debian:trixie-slim
+            docker-platform: linux/386
+          - os: ubuntu-24.04
+            platform: linux-armv7
+            image: node:20-bookworm
+            docker-platform: linux/arm/v7
+          - os: ubuntu-24.04
+            platform: linux-ppc64
+            image: node:20-bookworm
+            docker-platform: linux/ppc64le
+          - os: ubuntu-24.04
+            platform: linux-s390x
+            image: node:20-bookworm
+            docker-platform: linux/s390x
+          - os: ubuntu-24.04
+            platform: linux-riscv64
+            image: debian:trixie-slim
+            docker-platform: linux/riscv64
+          - os: ubuntu-24.04
             platform: linux-x64-musl
             image: node:20-alpine
           - os: ubuntu-24.04-arm
             platform: linux-arm64-musl
             image: node:20-alpine
+          - os: ubuntu-24.04
+            platform: linux-armv6-musl
+            image: node:20-alpine
+            docker-platform: linux/arm/v6
+          - os: ubuntu-24.04
+            platform: linux-armv7-musl
+            image: node:20-alpine
+            docker-platform: linux/arm/v7
+          - os: ubuntu-24.04
+            platform: freebsd-x64
+            vm: freebsd
           - os: macos-15-intel
             platform: darwin-x64
           - os: macos-latest
             platform: darwin-arm64
           - os: windows-latest
             platform: win32-x64
+          - os: windows-11-arm
+            platform: win32-arm64
+          - os: windows-latest
+            platform: win32-ia32
+            node: 22
+            node-arch: x86
     defaults:
       run:
         shell: bash
@@ -193,18 +397,45 @@ jobs:
           path: source
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: ${{ matrix.node || 20 }}
+          architecture: ${{ matrix.node-arch }}
       - run: npm pack ./source
 
+      - name: Set up QEMU
+        if: matrix.docker-platform
+        uses: docker/setup-qemu-action@v3
       - name: Install in ${{ matrix.image }}
-        if: runner.os == 'Linux'
+        if: matrix.image
+        env:
+          DOCKER_PLATFORM: ${{ matrix.docker-platform }}
         run: |
-          docker run --rm -v "$PWD:/work:ro" -e SMOKE_TEST -e MARMOTTA_ZIG_DIR=/no-zig ${{ matrix.image }} sh -euc '
+          docker run --rm ${DOCKER_PLATFORM:+--platform "$DOCKER_PLATFORM"} -v "$PWD:/work:ro" -e SMOKE_TEST -e MARMOTTA_ZIG_DIR=/no-zig ${{ matrix.image }} sh -euc '
+            command -v npm > /dev/null || {
+              apt-get update -qq
+              apt-get install -y -qq --no-install-recommends nodejs npm > /dev/null
+            }
             mkdir /app
             cd /app
             npm init --yes > /dev/null
             npm install --foreground-scripts /work/ghostscript4js-*.tgz
             node -e "$SMOKE_TEST"'
+
+      - name: Install on FreeBSD
+        if: matrix.vm == 'freebsd'
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          copyback: false
+          envs: SMOKE_TEST
+          prepare: pkg install -y node22 npm-node22
+          run: |
+            export MARMOTTA_ZIG_DIR=/no-zig
+            work="$PWD"
+            mkdir /tmp/app
+            cd /tmp/app
+            npm init --yes > /dev/null
+            npm install --foreground-scripts "$work"/ghostscript4js-*.tgz
+            node -e "$SMOKE_TEST"
 
       - name: Install
         if: runner.os != 'Linux'
