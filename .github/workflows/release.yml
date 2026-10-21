@@ -249,7 +249,7 @@ jobs:
       - run: rm -rf node_modules/@libgs
       - name: Set up QEMU
         if: matrix.image
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Test on ${{ matrix.image }} (${{ matrix.docker-platform }})
         if: matrix.image
         run: |
@@ -397,7 +397,7 @@ jobs:
 
       - name: Set up QEMU
         if: matrix.docker-platform
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Install in ${{ matrix.image }}
         if: matrix.image
         env:
