@@ -479,8 +479,10 @@ the platform. You can also call Marmotta directly, for example `npx marmotta reb
 
 To cross-compile with `npx marmotta build --target <zig target>`, the libgs package of the target must be installed,
 for example `@libgs/linux-arm64` for `--target aarch64-linux-gnu`. npm installs only the package of the running
-system, so install the other one with `npm install --no-save --force @libgs/<platform>@<version>`, using the version
-in the `optionalDependencies` of `package.json`. The Zig target `arm` is used for both armv6 and armv7: the armv7
+system: install the one of the target with npm's `--os`, `--cpu` and `--libc` options, which take the values of
+`process.platform`, `process.arch` and `glibc` or `musl`, for example
+`npm install --os=linux --cpu=arm64 --libc=glibc`. Run `npm install` again to go back to the package of the running
+system. The Zig target `arm` is used for both armv6 and armv7: the armv7
 package is chosen unless the environment variable **GS4JS_ARM_VERSION** is set to `6`, for example
 `GS4JS_ARM_VERSION=6 npx marmotta build --target arm-linux-gnueabihf` with `@libgs/linux-armv6` installed. The addon
 is then built for the same CPU as the libgs library, without the NEON instructions of the default arm CPU of Zig.

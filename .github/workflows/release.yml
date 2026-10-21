@@ -50,7 +50,7 @@ jobs:
           - os: windows-latest
             platform: win32-ia32
             target: x86-windows
-            package: '@libgs/win32-x86'
+            npm-platform: --cpu=ia32
             test-node: 22
             test-arch: x86
     defaults:
@@ -67,13 +67,10 @@ jobs:
           TAG: ${{ github.event.release.tag_name }}
         # install.js downloads the binary from the release tagged with the package version
         run: test "$TAG" = "$(node -p "require('./package.json').version")"
-      # Installs the libgs package of the runner, which is the platform built
-      - run: npm install --ignore-scripts
-      - name: Install ${{ matrix.package }}
-        if: matrix.package
-        env:
-          PACKAGE: ${{ matrix.package }}
-        run: npm install --no-save --force --ignore-scripts "$PACKAGE@$(node -p "require('./package.json').optionalDependencies[process.env.PACKAGE]")"
+      # Installs the libgs package of the platform built: the one of the runner
+      # or, with npm-platform, the one of the os, cpu and libc it sets. npm does
+      # not install a package of optionalDependencies afterwards, with --force.
+      - run: npm install --ignore-scripts ${{ matrix.npm-platform }}
       - name: Build
         if: runner.os != 'Windows'
         run: npx marmotta build --target ${{ matrix.target }}
@@ -164,7 +161,7 @@ jobs:
         include:
           - platform: linux-ia32
             target: x86-linux-gnu.2.17
-            package: '@libgs/linux-ia32'
+            npm-platform: --os=linux --cpu=ia32 --libc=glibc
             machine: Intel 80386
             docker-platform: linux/386
             image: debian:trixie-slim
@@ -174,57 +171,57 @@ jobs:
           - platform: linux-armv6
             target: arm-linux-gnueabihf.2.28
             arm-version: 6
-            package: '@libgs/linux-armv6'
+            npm-platform: --os=linux --cpu=arm --libc=glibc
             machine: ARM
             docker-platform: linux/arm/v7
             image: debian:trixie-slim
           - platform: linux-armv7
             target: arm-linux-gnueabihf.2.28
             arm-version: 7
-            package: '@libgs/linux-armv7'
+            npm-platform: --os=linux --cpu=arm --libc=glibc
             machine: ARM
             docker-platform: linux/arm/v7
             image: debian:trixie-slim
           - platform: linux-ppc64
             target: powerpc64le-linux-gnu.2.28
-            package: '@libgs/linux-ppc64'
+            npm-platform: --os=linux --cpu=ppc64 --libc=glibc
             machine: PowerPC64
             docker-platform: linux/ppc64le
             image: node:24-trixie-slim
           - platform: linux-s390x
             target: s390x-linux-gnu.2.28
-            package: '@libgs/linux-s390x'
+            npm-platform: --os=linux --cpu=s390x --libc=glibc
             machine: IBM S/390
             docker-platform: linux/s390x
             image: node:24-trixie-slim
           - platform: linux-riscv64
             target: riscv64-linux-gnu.2.28
-            package: '@libgs/linux-riscv64'
+            npm-platform: --os=linux --cpu=riscv64 --libc=glibc
             machine: RISC-V
             docker-platform: linux/riscv64
             image: debian:trixie-slim
           # There is no official loong64 image to run the tests
           - platform: linux-loong64
             target: loongarch64-linux-gnu.2.36
-            package: '@libgs/linux-loong64'
+            npm-platform: --os=linux --cpu=loong64 --libc=glibc
             machine: LoongArch
           - platform: linux-armv6-musl
             target: arm-linux-musleabihf
             arm-version: 6
-            package: '@libgs/linux-musl-armv6'
+            npm-platform: --os=linux --cpu=arm --libc=musl
             machine: ARM
             docker-platform: linux/arm/v6
             image: node:22-alpine
           - platform: linux-armv7-musl
             target: arm-linux-musleabihf
             arm-version: 7
-            package: '@libgs/linux-musl-armv7'
+            npm-platform: --os=linux --cpu=arm --libc=musl
             machine: ARM
             docker-platform: linux/arm/v7
             image: node:22-alpine
           - platform: freebsd-x64
             target: x86_64-freebsd
-            package: '@libgs/freebsd-x64'
+            npm-platform: --os=freebsd --cpu=x64
             machine: Advanced Micro Devices X86-64
             vm: freebsd
     env:
@@ -239,11 +236,8 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: test "$TAG" = "$(node -p "require('./package.json').version")"
-      - run: npm install --ignore-scripts
-      - name: Install ${{ matrix.package }}
-        env:
-          PACKAGE: ${{ matrix.package }}
-        run: npm install --no-save --force --ignore-scripts "$PACKAGE@$(node -p "require('./package.json').optionalDependencies[process.env.PACKAGE]")"
+      # Installs the libgs package of the target, as in the build job
+      - run: npm install --ignore-scripts ${{ matrix.npm-platform }}
       - name: Build
         run: npx marmotta build --target ${{ matrix.target }}
       - name: Check the architecture
