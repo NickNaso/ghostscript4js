@@ -95,7 +95,22 @@ function cleanup() {
   }
 }
 
+// The timeout of the specs. The release workflow runs them with QEMU on the
+// platforms without a GitHub runner, where Ghostscript is many times slower.
+const TIMEOUT = 60 * 1000
+
 describe('Test ghostscript4js', function () {
+
+  let defaultTimeout
+
+  beforeEach(function () {
+    defaultTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = TIMEOUT
+  })
+
+  afterEach(function () {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = defaultTimeout
+  })
 
   beforeAll(function () {
     cleanup()
