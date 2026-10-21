@@ -96,16 +96,15 @@ one matching the `os`, `cpu` and `libc` of the system:
 
 |                   | x86 | x64 | armv6 | armv7 | arm64 | ppc64le | s390x | loong64 | riscv64 |
 | ----------------- | --- | --- | ----- | ----- | ----- | ------- | ----- | ------- | ------- |
-| Windows           |     | ✅  |       |       | ✅    |         |       |         |         |
+| Windows           | ✅  | ✅  |       |       | ✅    |         |       |         |         |
 | macOS >= 13.5     |     | ✅  |       |       | ✅    |         |       |         |         |
 | Linux glibc       | ✅  | ✅  | ✅    | ✅    | ✅    | ✅      | ✅    | ✅      | ✅      |
 | Linux musl        |     | ✅  | ✅    | ✅    | ✅    |         |       |         |         |
 | FreeBSD           |     | ✅  |       |       |       |         |       |         |         |
 
 On Linux, macOS and FreeBSD Ghostscript is linked statically into the addon, so it does not depend on the libraries of
-the system. On Windows the addon loads the Ghostscript DLL of the libgs package, which is copied next to it. Windows
-x86 has a libgs package, but the addon cannot be built with it: on Windows x86 use the
-[Ghostscript installed on the system](#system).
+the system. On Windows the addon loads the Ghostscript DLL of the libgs package, which is copied next to it. A
+[prebuilt binary](#prebuilt) of the addon is available for each of these platforms.
 
 <a name="prerequisites"></a>
 
@@ -218,10 +217,16 @@ installed version and loaded once to check that it works. Ghostscript does not n
 
 | Platform | Requirements |
 | --- | --- |
-| Linux x64 and arm64 with glibc | glibc 2.28 or later |
-| Linux x64 and arm64 with musl, such as Alpine | none |
+| Linux x64, arm64, armv6, armv7, ppc64le, s390x and riscv64 with glibc | glibc 2.28 or later |
+| Linux x86 with glibc | glibc 2.17 or later |
+| Linux loong64 with glibc | glibc 2.36 or later |
+| Linux x64, arm64, armv6 and armv7 with musl, such as Alpine | none |
 | macOS x64 and arm64 | macOS 13.5 or later |
-| Windows x64 | none: the DLL of the libgs package is copied next to the addon |
+| Windows x64, arm64 and x86 | none: the DLL of the libgs package is copied next to the addon. Windows x86 needs Node.js 20 or 22, the last versions for 32-bit Windows |
+| FreeBSD x64 | none |
+
+The binaries for armv6 (Raspberry Pi 1 and Zero) and armv7 are different, as the libgs libraries: the one matching the
+ARM version of Node.js is downloaded.
 
 The addon is built from source, as described in [Prerequisites](#prerequisites), when:
 
@@ -477,7 +482,8 @@ for example `@libgs/linux-arm64` for `--target aarch64-linux-gnu`. npm installs 
 system, so install the other one with `npm install --no-save --force @libgs/<platform>@<version>`, using the version
 in the `optionalDependencies` of `package.json`. The Zig target `arm` is used for both armv6 and armv7: the armv7
 package is chosen unless the environment variable **GS4JS_ARM_VERSION** is set to `6`, for example
-`GS4JS_ARM_VERSION=6 npx marmotta build --target arm-linux-gnueabihf` with `@libgs/linux-armv6` installed.
+`GS4JS_ARM_VERSION=6 npx marmotta build --target arm-linux-gnueabihf` with `@libgs/linux-armv6` installed. The addon
+is then built for the same CPU as the libgs library, without the NEON instructions of the default arm CPU of Zig.
 
 The version of libgs is set in the `optionalDependencies` of `package.json`, with the same version for all the
 packages. To update Ghostscript, change it for every `@libgs/*` package and update `MAX_SUPPORTED_REVISION` in
@@ -485,7 +491,9 @@ packages. To update Ghostscript, change it for every `@libgs/*` package and upda
 
 Every pull request and every push to `master` are built and tested with libgs on Linux, macOS and Windows, and with
 the Ghostscript installed on the system on one runner of each operating system. When a release is
-published, the `Release` workflow builds the [prebuilt binaries](#prebuilt), attaches them to the release as
+published, the `Release` workflow builds the [prebuilt binaries](#prebuilt) for the 19 platforms of libgs: natively on
+the platforms with a GitHub runner, and otherwise cross-compiled with Zig and tested with QEMU, or in a FreeBSD virtual
+machine. It attaches them to the release as
 `ghostscript4js-<version>-<platform>.node.gz` and then installs the package on each platform to check that they are
 downloaded and loaded. The release tag must be the version in `package.json`, for example `3.3.0`, because the
 installation downloads the binaries from that tag. Publish the package to npm after the workflow has completed,

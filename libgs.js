@@ -101,6 +101,22 @@ function system(target) {
     }
 }
 
+// The CPUs the armv6 and armv7 libraries of libgs are built for. The arm
+// baseline of Zig includes NEON, which the armv7 distributions, such as Alpine
+// armv7 and Debian armhf, do not require, and which armv6 does not have.
+const ARM_CPUS = {
+    6: 'arm1176jzf_s',
+    7: 'generic+v7a+vfp3d16-neon-d32'
+}
+
+// The -mcpu of Zig for a target, the same as the one of its libgs library. It
+// is empty when the target does not need one or, without a target, for the
+// running system, which Zig builds for its own CPU.
+function targetCpu(target) {
+    const { arch, armVersion } = system(target)
+    return target && arch === 'arm' ? ARM_CPUS[armVersion] || '' : ''
+}
+
 // The name of the libgs package for a system. The names keep some historical
 // architecture names, which differ from the ones of Node.js.
 function packageName({ platform, arch, musl, armVersion }) {
@@ -154,5 +170,6 @@ module.exports = {
     isSet,
     isMusl,
     useSystemGhostscript,
+    targetCpu,
     findLibgs
 }

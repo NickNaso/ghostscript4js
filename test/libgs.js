@@ -20,8 +20,27 @@
 'use strict'
 
 const fs = require('fs')
-const { SYSTEM_OPTIONS, useSystemGhostscript, findLibgs } = require('../libgs')
+const { SYSTEM_OPTIONS, useSystemGhostscript, targetCpu, findLibgs } = require('../libgs')
 const { optionalDependencies } = require('../package.json')
+
+// Runs fn with GS4JS_ARM_VERSION set to value, or unset when it is undefined
+function withArmVersion(value, fn) {
+  const saved = process.env.GS4JS_ARM_VERSION
+  if (value === undefined) {
+    delete process.env.GS4JS_ARM_VERSION
+  } else {
+    process.env.GS4JS_ARM_VERSION = value
+  }
+  try {
+    fn()
+  } finally {
+    if (saved === undefined) {
+      delete process.env.GS4JS_ARM_VERSION
+    } else {
+      process.env.GS4JS_ARM_VERSION = saved
+    }
+  }
+}
 
 describe('libgs', function () {
 
@@ -44,25 +63,30 @@ describe('libgs', function () {
       'x86-windows': '@libgs/win32-x86',
       'x86_64-freebsd': '@libgs/freebsd-x64'
     }
-    for (const [target, name] of Object.entries(packages)) {
-      expect(findLibgs(target).name).toBe(name)
-      expect(Object.keys(optionalDependencies)).toContain(name)
-    }
+    withArmVersion(undefined, () => {
+      for (const [target, name] of Object.entries(packages)) {
+        expect(findLibgs(target).name).toBe(name)
+        expect(Object.keys(optionalDependencies)).toContain(name)
+      }
+    })
   })
 
   it('Should find the armv6 libgs package of a Zig target with GS4JS_ARM_VERSION', function () {
-    const saved = process.env.GS4JS_ARM_VERSION
-    process.env.GS4JS_ARM_VERSION = '6'
-    try {
+    withArmVersion('6', () => {
       expect(findLibgs('arm-linux-gnueabihf').name).toBe('@libgs/linux-armv6')
       expect(findLibgs('arm-linux-musleabihf').name).toBe('@libgs/linux-musl-armv6')
-    } finally {
-      if (saved === undefined) {
-        delete process.env.GS4JS_ARM_VERSION
-      } else {
-        process.env.GS4JS_ARM_VERSION = saved
-      }
-    }
+    })
+  })
+
+  it('Should build for the CPU of the libgs library of a Zig target', function () {
+    withArmVersion(undefined, () => {
+      expect(targetCpu('arm-linux-gnueabihf.2.28')).toBe('generic+v7a+vfp3d16-neon-d32')
+      expect(targetCpu('x86_64-linux-gnu.2.28')).toBe('')
+      expect(targetCpu()).toBe('')
+    })
+    withArmVersion('6', () => {
+      expect(targetCpu('arm-linux-musleabihf')).toBe('arm1176jzf_s')
+    })
   })
 
   it('Should find the libgs package of the running system', function () {

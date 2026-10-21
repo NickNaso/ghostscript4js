@@ -21,8 +21,9 @@
 
 const fs = require('fs')
 const path = require('path')
+const { execFileSync } = require('child_process')
 const findMacOSLibraryPath = require('./macOS-lib-path-finder')
-const { SYSTEM_OPTIONS, option, useSystemGhostscript, findLibgs } = require('./libgs')
+const { option, useSystemGhostscript, targetCpu, findLibgs } = require('./libgs')
 
 const OUTPUT_DIR = path.join('build', 'Release')
 
@@ -68,6 +69,35 @@ function copyDll(directory, dll) {
     fs.copyFileSync(dll, path.join(outputDir, path.basename(dll)))
 }
 
+// The folder of the libraries of the macOS SDK, which contains iconv. Zig uses
+// the SDK only when it builds for the running system, not with an explicit
+// target such as x86_64-macos, even if it is the one of the runner.
+function macOSSdkLibDir() {
+    let sdk = process.env.SDKROOT || ''
+    if (!sdk && process.platform === 'darwin') {
+        try {
+            sdk = execFileSync('xcrun', ['--show-sdk-path'], { encoding: 'utf8' }).trim()
+        } catch {
+            // The Command Line Tools are not installed
+        }
+    }
+    if (!sdk || !fs.existsSync(path.join(sdk, 'usr', 'lib'))) {
+        throw new Error('The macOS SDK was not found. Install the Xcode Command Line Tools ' +
+            'with xcode-select --install, or set SDKROOT to the folder of the SDK')
+    }
+    return path.join(sdk, 'usr', 'lib')
+}
+
+// The Ghostscript DLLs for Windows x86, of libgs and of the Ghostscript
+// installer, export the functions with __stdcall, which iapi.h does not use
+// with the MinGW ABI of Zig (see ghostscript4js.h). On 64-bit there is a single
+// calling convention.
+function useStdcall(config, target, arch) {
+    if (!is64Bit(target, arch)) {
+        config.cxxFlags.push('-DGSDLLAPI=__stdcall', '-DGSDLLCALL=__stdcall')
+    }
+}
+
 // Links the Ghostscript of the libgs package: a static library on Linux,
 // FreeBSD and macOS, so the addon contains Ghostscript, and a DLL on Windows
 function useLibgs(config, libgs, { directory, target, platform, arch }) {
@@ -75,12 +105,7 @@ function useLibgs(config, libgs, { directory, target, platform, arch }) {
     config.linkerFlags.push(libgs.library)
     switch (targetPlatform(target, platform)) {
         case 'win32':
-            // With the MinGW ABI of Zig, iapi.h declares the functions without
-            // __stdcall, which on x86 does not match the DLL
-            if (!is64Bit(target, arch)) {
-                throw new Error('libgs cannot be used to build the addon for Windows x86. ' +
-                    `Set ${SYSTEM_OPTIONS.join(', ')} to use the Ghostscript installed on the system`)
-            }
+            useStdcall(config, target, arch)
             copyDll(directory, libgs.dll)
             break
         case 'darwin':
@@ -89,9 +114,16 @@ function useLibgs(config, libgs, { directory, target, platform, arch }) {
             // exported. Node.js loads the addon with the two-level namespace
             // of macOS, so they cannot replace the symbols of other libraries.
             config.cxxFlags.push('-fvisibility=hidden')
-            config.linkerFlags.push('-lm', '-ldl', '-lpthread', '-liconv')
+            config.linkerFlags.push(`-L${macOSSdkLibDir()}`, '-lm', '-ldl', '-lpthread', '-liconv')
             break
-        default:
+        default: {
+            // Zig links the C++ library it compiles for the target, so the
+            // CPU is passed to the linker too
+            const cpu = targetCpu(target)
+            if (cpu) {
+                config.cxxFlags.push(`-mcpu=${cpu}`)
+                config.linkerFlags.push(`-mcpu=${cpu}`)
+            }
             // Exports only the functions that register the addon, so the
             // symbols of Ghostscript and of the libraries it contains, such as
             // zlib, cannot clash with the ones of Node.js and of other addons
@@ -103,6 +135,7 @@ function useLibgs(config, libgs, { directory, target, platform, arch }) {
             if (!process.argv.includes('--debug')) {
                 config.linkerFlags.push('-Wl,--strip-debug')
             }
+        }
     }
 }
 
@@ -127,12 +160,7 @@ async function useSystem(config, { directory, target, platform, arch }) {
     switch (targetPlatform(target, platform)) {
         case 'win32': {
             const bits = is64Bit(target, arch) ? '64' : '32'
-            // The DLL of the Ghostscript installer exports the functions with
-            // __stdcall, which iapi.h only uses when _Windows is defined. On
-            // 64-bit there is a single calling convention.
-            if (bits === '32') {
-                config.cxxFlags.push('-DGSDLLAPI=__stdcall', '-DGSDLLCALL=__stdcall')
-            }
+            useStdcall(config, target, arch)
             const home = option('GS4JS_HOME') || 'C:/gs/bin'
             const lib = option('GS4JS_LIB') || `gsdll${bits}.lib`
             const dll = option('GS4JS_DLL') || `gsdll${bits}.dll`
