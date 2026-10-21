@@ -207,6 +207,31 @@ npm install ghostscript4js
 npm installs the libgs package of the platform. The installation then uses a prebuilt binary of the addon when one is
 available for the platform, and otherwise builds the addon from source.
 
+<a name="allowscripts"></a>
+
+### npm 12 and later
+
+The addon is installed by the install script of the package. npm 12 and later run the install scripts of dependencies
+only when they are allowed, otherwise the installation succeeds with a warning and loading the package fails. Allow
+ghostscript4js before installing it, in the `package.json` of your project:
+
+```json
+{
+  "allowScripts": {
+    "ghostscript4js": true
+  }
+}
+```
+
+Or, after installing it, approve it and run its install script:
+
+```console
+npm install-scripts approve ghostscript4js
+npm rebuild ghostscript4js
+```
+
+The `--allow-scripts` option of npm cannot be used to install a dependency of a project.
+
 <a name="prebuilt"></a>
 
 ### Prebuilt binaries
@@ -506,6 +531,9 @@ the binaries without a release.
 
 ## Troubleshooting
 
+* **`The ghostscript4js native addon is not installed`** when the package is loaded, after the warning
+  `install scripts blocked because they are not covered by allowScripts` during the installation: npm 12 and later did
+  not run the install script of ghostscript4js. Allow it as described in [npm 12 and later](#allowscripts).
 * **`@libgs/<platform> is not installed, using the Ghostscript installed on the system`** during the installation: npm
   did not install libgs, because the optional dependencies were disabled or there is no libgs package for the platform
   (see [Supported platforms](#platforms)). Install without `--omit=optional`, or install Ghostscript on the system as

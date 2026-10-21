@@ -385,6 +385,18 @@ jobs:
         const gs = require('ghostscript4js')
         console.log(gs.version())
         gs.executeSync('-q -dNODISPLAY -dNOPAUSE -dBATCH -c quit')
+      # Installs the package in the current folder from the tarball $1, with
+      # sh -euc "$INSTALL" sh <tarball>
+      INSTALL: |
+        npm init --yes > /dev/null
+        npm install --foreground-scripts "$1"
+        # npm 12 and later skip the install script of the package until it is
+        # approved, as a user does after the warning of npm
+        if [ "$(npm --version | cut -d. -f1)" -ge 12 ]; then
+          npm install-scripts approve ghostscript4js
+          npm rebuild --foreground-scripts ghostscript4js
+        fi
+        node -e "$SMOKE_TEST"
     steps:
       - uses: actions/checkout@v7
         with:
@@ -403,16 +415,14 @@ jobs:
         env:
           DOCKER_PLATFORM: ${{ matrix.docker-platform }}
         run: |
-          docker run --rm ${DOCKER_PLATFORM:+--platform "$DOCKER_PLATFORM"} -v "$PWD:/work:ro" -e SMOKE_TEST -e MARMOTTA_ZIG_DIR=/no-zig ${{ matrix.image }} sh -euc '
+          docker run --rm ${DOCKER_PLATFORM:+--platform "$DOCKER_PLATFORM"} -v "$PWD:/work:ro" -e SMOKE_TEST -e INSTALL -e MARMOTTA_ZIG_DIR=/no-zig ${{ matrix.image }} sh -euc '
             command -v npm > /dev/null || {
               apt-get update -qq
               apt-get install -y -qq --no-install-recommends nodejs npm > /dev/null
             }
             mkdir /app
             cd /app
-            npm init --yes > /dev/null
-            npm install --foreground-scripts /work/ghostscript4js-*.tgz
-            node -e "$SMOKE_TEST"'
+            sh -euc "$INSTALL" sh /work/ghostscript4js-*.tgz'
 
       - name: Install on FreeBSD
         if: matrix.vm == 'freebsd'
@@ -420,16 +430,14 @@ jobs:
         with:
           usesh: true
           copyback: false
-          envs: SMOKE_TEST
+          envs: SMOKE_TEST INSTALL
           prepare: pkg install -y node22 npm-node22
           run: |
             export MARMOTTA_ZIG_DIR=/no-zig
             work="$PWD"
             mkdir /tmp/app
             cd /tmp/app
-            npm init --yes > /dev/null
-            npm install --foreground-scripts "$work"/ghostscript4js-*.tgz
-            node -e "$SMOKE_TEST"
+            sh -euc "$INSTALL" sh "$work"/ghostscript4js-*.tgz
 
       - name: Install
         if: runner.os != 'Linux'
@@ -438,6 +446,4 @@ jobs:
         run: |
           mkdir app
           cd app
-          npm init --yes > /dev/null
-          npm install --foreground-scripts ../ghostscript4js-*.tgz
-          node -e "$SMOKE_TEST"
+          sh -euc "$INSTALL" sh ../ghostscript4js-*.tgz
