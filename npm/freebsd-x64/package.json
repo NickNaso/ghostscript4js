@@ -1,0 +1,25 @@
+{
+  "name": "@ghostscript4js/freebsd-x64",
+  "version": "4.0.0",
+  "description": "The prebuilt ghostscript4js addon for FreeBSD x64",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NickNaso/ghostscript4js.git",
+    "directory": "npm/freebsd-x64"
+  },
+  "main": "ghostscript4js.node",
+  "files": [
+    "ghostscript4js.node"
+  ],
+  "preferUnplugged": true,
+  "engines": {
+    "node": ">= 20.0.0"
+  },
+  "os": [
+    "freebsd"
+  ],
+  "cpu": [
+    "x64"
+  ]
+}

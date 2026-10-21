@@ -1,0 +1,28 @@
+{
+  "name": "@ghostscript4js/linux-x64-musl",
+  "version": "4.0.0",
+  "description": "The prebuilt ghostscript4js addon for Linux x64 with musl",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NickNaso/ghostscript4js.git",
+    "directory": "npm/linux-x64-musl"
+  },
+  "main": "ghostscript4js.node",
+  "files": [
+    "ghostscript4js.node"
+  ],
+  "preferUnplugged": true,
+  "engines": {
+    "node": ">= 20.0.0"
+  },
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "libc": [
+    "musl"
+  ]
+}

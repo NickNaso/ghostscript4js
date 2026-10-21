@@ -19,73 +19,35 @@
 
 'use strict'
 
-// Installs the addon. The prebuilt binary for the current platform, which
-// contains Ghostscript from libgs (on Windows it loads the DLL of the libgs
-// package), is downloaded from the GitHub release of this version. When there
-// is none, or it cannot be loaded, the addon is built from source with
-// Marmotta. It is always built from source to use the Ghostscript installed on
-// the system, chosen with the GS4JS_HOME, GS4JS_LIB, GS4JS_DLL and
-// GS4JS_INCLUDE options.
+// Installs the addon. npm installs the prebuilt addon of the platform, which
+// contains Ghostscript from libgs (on Windows the DLL of libgs is next to it),
+// as the optional dependency @ghostscript4js/<platform>, and it is loaded once
+// to check that it works. When there is none, or it cannot be loaded, the addon
+// is built from source with Marmotta. It is always built from source to use the
+// Ghostscript installed on the system, chosen with the GS4JS_HOME, GS4JS_LIB,
+// GS4JS_DLL and GS4JS_INCLUDE options.
 
 const fs = require('fs')
 const path = require('path')
-const zlib = require('zlib')
 const { spawnSync } = require('child_process')
-const { version } = require('./package.json')
-const { option, isSet, isMusl, useSystemGhostscript, findLibgs } = require('./libgs')
+const { option, isSet, useSystemGhostscript } = require('./libgs')
+const { packageName, findPrebuilt } = require('./prebuilt')
 
 const ADDON = path.join(__dirname, 'build', 'Release', 'ghostscript4js.node')
-const BINARY_HOST = 'https://github.com/NickNaso/ghostscript4js/releases/download'
-const DOWNLOAD_TIMEOUT = 60 * 1000
 
 function buildFromSource() {
     return isSet(option('GS4JS_BUILD_FROM_SOURCE')) ||
         isSet(process.env.npm_config_build_from_source || '') ||
-        // The prebuilt binaries use libgs, not the Ghostscript of the system
+        // The prebuilt addons use libgs, not the Ghostscript of the system
         useSystemGhostscript() ||
         // A clone of the repository uses its own sources
         fs.existsSync(path.join(__dirname, '.git'))
 }
 
-// The platform in the name of the release assets, for example linux-x64,
-// linux-x64-musl, darwin-arm64 or win32-x64. The 32-bit ARM binaries are
-// different for armv6 and armv7, as the libgs libraries.
-function platform() {
-    const arch = process.arch === 'arm' ? `armv${process.config.variables.arm_version}` : process.arch
-    return `${process.platform}-${arch}${isMusl() ? '-musl' : ''}`
-}
-
-async function download(url) {
-    const response = await fetch(url, { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT) })
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-    }
-    // gunzip also fails when the download is incomplete
-    const addon = zlib.gunzipSync(Buffer.from(await response.arrayBuffer()))
-    fs.mkdirSync(path.dirname(ADDON), { recursive: true })
-    fs.writeFileSync(ADDON, addon)
-}
-
-// The addon loads the Ghostscript DLL from its own directory, as in
-// marmotta.config.js: the one of libgs or, when npm did not install it, the one
-// of the Ghostscript installed in the default folder, which has the same API
-function copyWindowsDll() {
-    const libgs = findLibgs()
-    let dll = libgs.dll
-    if (!libgs.installed) {
-        const bits = process.arch === 'x64' || process.arch === 'arm64' ? '64' : '32'
-        dll = path.join('C:/gs/bin', `gsdll${bits}.dll`)
-        if (!fs.existsSync(dll)) {
-            throw new Error(`${libgs.name} is not installed and ${dll} was not found`)
-        }
-    }
-    fs.copyFileSync(dll, path.join(path.dirname(ADDON), path.basename(dll)))
-}
-
 // The addon is loaded in another process, so a crash cannot stop the installation
-function checkLoad() {
+function checkLoad(addon) {
     const script = 'try { require(process.argv[1]).version() } catch (err) { console.error(err.message); process.exit(1) }'
-    const result = spawnSync(process.execPath, ['-e', script, ADDON], { encoding: 'utf8' })
+    const result = spawnSync(process.execPath, ['-e', script, addon], { encoding: 'utf8' })
     if (result.status !== 0) {
         throw new Error(result.stderr.trim() || `the process ended with ${result.signal || result.status}`)
     }
@@ -101,24 +63,28 @@ function build() {
     process.exitCode = result.status ?? 1
 }
 
-async function main() {
+function main() {
     if (buildFromSource()) {
         return build()
     }
-    const url = `${option('GS4JS_BINARY_HOST') || BINARY_HOST}/${version}/ghostscript4js-${version}-${platform()}.node.gz`
-    try {
-        await download(url)
-        if (process.platform === 'win32') {
-            copyWindowsDll()
-        }
-        checkLoad()
-        console.log(`ghostscript4js: installed the prebuilt binary ${url}`)
-    } catch (err) {
-        console.warn(`ghostscript4js: cannot use the prebuilt binary ${url}: ${err.message}`)
-        console.warn('ghostscript4js: building from source')
-        fs.rmSync(ADDON, { force: true })
-        build()
+    const name = packageName()
+    const addon = findPrebuilt()
+    if (!addon) {
+        console.warn(`ghostscript4js: ${name} is not installed, building from source`)
+        return build()
     }
+    try {
+        checkLoad(addon)
+    } catch (err) {
+        console.warn(`ghostscript4js: cannot load the prebuilt addon of ${name}: ${err.message}`)
+        console.warn('ghostscript4js: building from source')
+        return build()
+    }
+    // The addon built from source is loaded before the prebuilt one, so the
+    // one of a previous installation, for example with the Ghostscript of the
+    // system, is removed
+    fs.rmSync(ADDON, { force: true })
+    console.log(`ghostscript4js: using the prebuilt addon of ${name}`)
 }
 
 main()

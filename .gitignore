@@ -4,6 +4,10 @@ npm-debug.log*
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build
 
+# Prebuilt addons, copied to the packages of npm/ by the Release workflow
+npm/*/*.node
+npm/*/*.dll
+
 # Dependency directories
 node_modules
 

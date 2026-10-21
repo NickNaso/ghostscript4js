@@ -39,6 +39,18 @@ jobs:
       - run: npm install
       - run: npm test
 
+  # The packages of the prebuilt addons in npm/ have the version of
+  # ghostscript4js, which lists them in its optionalDependencies
+  packages:
+    name: Prebuilt addon packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: node npm/version.js --check
+
   # The addon is built with the Ghostscript installed on the system, chosen
   # with the GS4JS_* variables set by the setup-ghostscript action
   test-system:

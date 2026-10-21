@@ -44,7 +44,8 @@
   "scripts": {
     "install": "node install.js",
     "test": "node node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=test/jasmine.json",
-    "debug": "marmotta rebuild --debug"
+    "debug": "marmotta rebuild --debug",
+    "version": "node npm/version.js && git add npm"
   },
   "engines": {
     "node": ">= 20.0.0"
@@ -81,7 +82,26 @@
     "@libgs/linux-x64": "0.17.0",
     "@libgs/win32-arm64": "0.17.0",
     "@libgs/win32-x64": "0.17.0",
-    "@libgs/win32-x86": "0.17.0"
+    "@libgs/win32-x86": "0.17.0",
+    "@ghostscript4js/darwin-arm64": "4.0.0",
+    "@ghostscript4js/darwin-x64": "4.0.0",
+    "@ghostscript4js/freebsd-x64": "4.0.0",
+    "@ghostscript4js/linux-arm64": "4.0.0",
+    "@ghostscript4js/linux-arm64-musl": "4.0.0",
+    "@ghostscript4js/linux-armv6": "4.0.0",
+    "@ghostscript4js/linux-armv6-musl": "4.0.0",
+    "@ghostscript4js/linux-armv7": "4.0.0",
+    "@ghostscript4js/linux-armv7-musl": "4.0.0",
+    "@ghostscript4js/linux-ia32": "4.0.0",
+    "@ghostscript4js/linux-loong64": "4.0.0",
+    "@ghostscript4js/linux-ppc64": "4.0.0",
+    "@ghostscript4js/linux-riscv64": "4.0.0",
+    "@ghostscript4js/linux-s390x": "4.0.0",
+    "@ghostscript4js/linux-x64": "4.0.0",
+    "@ghostscript4js/linux-x64-musl": "4.0.0",
+    "@ghostscript4js/win32-arm64": "4.0.0",
+    "@ghostscript4js/win32-ia32": "4.0.0",
+    "@ghostscript4js/win32-x64": "4.0.0"
   },
   "devDependencies": {
     "jasmine": "^3.5.0"
@@ -97,6 +117,7 @@
     "libgs.js",
     "marmotta.config.js",
     "macOS-lib-path-finder.js",
+    "prebuilt.js",
     "lib/",
     "src/"
   ]
